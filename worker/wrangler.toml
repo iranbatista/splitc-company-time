@@ -5,11 +5,11 @@ compatibility_date = "2026-09-01"
 [vars]
 # Origem do GitHub Pages + dev local. É só a origem (sem caminho): uma página
 # em https://usuario.github.io/repo/ manda Origin: https://usuario.github.io
-ORIGENS_PERMITIDAS = "https://SEU_USUARIO.github.io,http://localhost:5173"
+ORIGENS_PERMITIDAS = "https://iranbatista.github.io,http://localhost:5173"
 
 # Não é segredo (já vai para o bundle do app), mas fica aqui para o Worker
 # recusar query em qualquer outro data source do workspace.
-NOTION_DATA_SOURCE_ID = "COLE_O_DATA_SOURCE_ID_AQUI"
+NOTION_DATA_SOURCE_ID = "7c315b31-fac5-4fe9-870e-7f8312747e73"
 
 # NOTION_TOKEN NÃO fica aqui. Ele é secret:
 #   npx wrangler secret put NOTION_TOKEN

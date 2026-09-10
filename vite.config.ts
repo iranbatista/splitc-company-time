@@ -17,6 +17,19 @@ export default defineConfig(({ mode }) => {
   // No build do GitHub Pages, o workflow passa a URL do Worker.
   const apiBase = ler('API_BASE') || '/notion/v1'
 
+  // Sem isso o erro é mudo: uma base sem scheme vira caminho relativo no axios,
+  // o POST bate no próprio host estático e volta 405.
+  if (!apiBase.startsWith('/') && !/^https?:\/\//.test(apiBase)) {
+    throw new Error(
+      `API_BASE precisa ser uma URL absoluta terminando em /v1 (recebido: "${apiBase}").`,
+    )
+  }
+  if (!apiBase.endsWith('/v1')) {
+    throw new Error(
+      `API_BASE precisa terminar em /v1 (recebido: "${apiBase}").`,
+    )
+  }
+
   // GitHub Pages serve em /nome-do-repo/. O workflow passa BASE_PATH.
   const basePath = ler('BASE_PATH') || '/'
 
