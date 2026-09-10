@@ -215,7 +215,9 @@ vite.config.ts              # proxy /notion + injeção do Authorization + alias
 worker/
   src/index.ts              # proxy do Notion em produção (Cloudflare Worker)
   wrangler.toml             # nome, origens permitidas, data source aceito
-.github/workflows/deploy.yml  # build + publish no GitHub Pages
+.github/workflows/
+  deploy.yml                # build + publish no GitHub Pages
+  deploy-worker.yml         # tsc + wrangler deploy do Worker
 ```
 
 Imports usam o alias `@/` → `src/`, como no splitc-profile-picture.
@@ -256,7 +258,7 @@ Editar `worker/wrangler.toml`:
   (só a origem, sem o caminho do repo)
 - `NOTION_DATA_SOURCE_ID`: o mesmo id do `.env`
 
-Guardar o token como secret e publicar:
+Guardar o token como secret e publicar a primeira vez na mão:
 
 ```bash
 npx wrangler secret put NOTION_TOKEN   # cola o ntn_... quando pedir
@@ -265,6 +267,10 @@ npm run deploy
 
 A saída mostra a URL, algo como
 `https://splitc-notion-proxy.SEU_SUBDOMINIO.workers.dev`.
+
+O `wrangler secret put` só precisa rodar uma vez (e de novo se o token rotacionar):
+o secret vive na Cloudflare e sobrevive aos deploys. Os deploys seguintes são
+automáticos — ver [Deploy automático](#deploy-automático).
 
 ### 2. Configurar o repositório
 
@@ -278,10 +284,21 @@ _repository variables_ (não são secrets — as duas já vão para o bundle):
 | `API_BASE` | `https://splitc-notion-proxy.SEU_SUBDOMINIO.workers.dev/v1` |
 | `NOTION_DATA_SOURCE_ID` | o id do data source |
 
-### 3. Push
+### 3. Secrets da Cloudflare no GitHub
 
-`.github/workflows/deploy.yml` roda a cada push na `main`: builda com
-`BASE_PATH=/<nome-do-repo>/` e publica no Pages.
+Para o CI conseguir publicar o Worker, em **Settings → Secrets and variables →
+Actions → Secrets**:
+
+| Secret | Onde achar |
+| --- | --- |
+| `CLOUDFLARE_API_TOKEN` | dash.cloudflare.com → My Profile → API Tokens → Create Token → template **Edit Cloudflare Workers** |
+| `CLOUDFLARE_ACCOUNT_ID` | dash.cloudflare.com → Workers & Pages, na barra lateral direita |
+
+O `NOTION_TOKEN` **não** vai para o GitHub — ele fica só na Cloudflare.
+
+### 4. Push
+
+A partir daqui é tudo automático.
 
 ### O que o Worker aceita
 
@@ -308,3 +325,18 @@ Se um dia precisar fechar:
 
 Vale ligar uma regra de **Rate limiting** no painel da Cloudflare para a rota do
 Worker — o free tier permite uma.
+
+## Deploy automático
+
+Dois workflows, separados por caminho, para nenhum dos dois rodar à toa:
+
+| Workflow | Dispara quando | O que faz |
+| --- | --- | --- |
+| `.github/workflows/deploy.yml` | push na `main` fora de `worker/**` | build com `BASE_PATH=/<repo>/` + publica no Pages |
+| `.github/workflows/deploy-worker.yml` | push na `main` em `worker/**` | `tsc --noEmit` + `wrangler deploy` |
+
+Os dois também aceitam disparo manual em **Actions → Run workflow**.
+
+O deploy do Worker não passa nenhum secret: o `NOTION_TOKEN` já está na
+Cloudflare e continua lá. O `tsc --noEmit` antes do deploy existe porque
+`wrangler deploy` não checa tipos sozinho.

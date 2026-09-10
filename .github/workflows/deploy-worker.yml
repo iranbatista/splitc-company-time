@@ -1,0 +1,45 @@
+name: Deploy Worker
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'worker/**'
+      - '.github/workflows/deploy-worker.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: worker
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: worker
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: worker/package-lock.json
+
+      - run: npm ci
+
+      # O deploy não valida tipos, então isso é a única rede de proteção.
+      - run: npx tsc --noEmit -p tsconfig.json
+
+      - uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: worker
+          # Sem `secrets:` de propósito: o NOTION_TOKEN vive só na Cloudflare
+          # (wrangler secret put) e sobrevive aos deploys. O CI não o vê.
+          command: deploy

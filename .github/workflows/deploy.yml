@@ -3,6 +3,10 @@ name: Deploy GitHub Pages
 on:
   push:
     branches: [main]
+    # Mudança só no Worker não precisa republicar o site.
+    paths-ignore:
+      - 'worker/**'
+      - '.github/workflows/deploy-worker.yml'
   workflow_dispatch:
 
 permissions:
