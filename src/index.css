@@ -1,0 +1,136 @@
+@import "tailwindcss";
+@import "@fontsource-variable/outfit";
+
+@theme inline {
+    --font-heading: var(--font-sans);
+    --font-sans: 'Outfit Variable', sans-serif;
+    --radius-sm: calc(var(--radius) * 0.6);
+    --radius-md: calc(var(--radius) * 0.8);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) * 1.4);
+    --radius-2xl: calc(var(--radius) * 1.8);
+    --radius-3xl: calc(var(--radius) * 2.2);
+}
+
+/* SplitC brand tokens, sampled from splitc.com.br. Mesmo bloco usado em
+   splitc-profile-picture — os dois apps compartilham a mesma paleta. */
+:root {
+    --brand-from: #f98510;
+    --brand-mid: #fda03d;
+    --brand-to: #ff6766;
+    /* Laranja escurecido o suficiente para virar texto sobre --tint. */
+    --brand-ink: #a4530b;
+    --ink: #242424;
+    --ink-muted: #6f6a66;
+    --page: #fbfbfb;
+    --card: #ffffff;
+    --hairline: rgba(36, 36, 36, 0.08);
+    /* Superfícies de apoio: o mesmo bege quente do hover/active do outro app. */
+    --wash: #faf7f3;
+    --tint: #fff6ec;
+    --danger: #e0483f;
+    --danger-hairline: #ffd9d4;
+    --danger-tint: #fff7f6;
+    --radius: 1rem;
+}
+
+/* O outro app é light-only. Aqui o dark existe (era requisito), mas é derivado
+   dos mesmos tokens: só as superfícies invertem, a marca não muda. */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --brand-ink: #f9a54b;
+        --ink: #f5f2ef;
+        --ink-muted: #a29a94;
+        --page: #131211;
+        --card: #1c1a18;
+        --hairline: rgba(255, 255, 255, 0.09);
+        --wash: #232120;
+        --tint: #2a1f14;
+        --danger: #ff8b82;
+        --danger-hairline: rgba(255, 139, 130, 0.28);
+        --danger-tint: rgba(255, 139, 130, 0.07);
+    }
+}
+
+@layer base {
+  html {
+    @apply font-sans;
+    color-scheme: light dark;
+    }
+  body {
+    background-color: var(--page);
+    color: var(--ink);
+    /* A landing carrega um wash quente atrás das superfícies brancas. */
+    background-image:
+      radial-gradient(58rem 30rem at 10% -10%, rgba(249, 133, 16, 0.07), transparent 62%),
+      radial-gradient(50rem 26rem at 94% 2%, rgba(255, 103, 102, 0.06), transparent 62%);
+    background-attachment: fixed;
+    }
+  @media (prefers-color-scheme: dark) {
+    body {
+      background-image:
+        radial-gradient(58rem 30rem at 10% -10%, rgba(249, 133, 16, 0.10), transparent 62%),
+        radial-gradient(50rem 26rem at 94% 2%, rgba(255, 103, 102, 0.08), transparent 62%);
+      }
+    }
+  ::selection {
+    background-color: rgba(249, 133, 16, 0.22);
+    }
+  :focus-visible {
+    outline: 2px solid var(--brand-from);
+    outline-offset: 2px;
+    }
+}
+
+@layer components {
+  /* O único movimento alto da marca: varredura laranja-para-coral. */
+  .brand-gradient {
+    background-image: linear-gradient(
+      100deg,
+      var(--brand-from),
+      var(--brand-mid) 45%,
+      var(--brand-to)
+    );
+    }
+  .brand-text {
+    background-image: linear-gradient(100deg, var(--brand-from), var(--brand-to));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    }
+  .eyebrow {
+    @apply text-[0.6875rem] font-medium uppercase tracking-[0.16em] text-[var(--ink-muted)];
+    }
+  .surface {
+    @apply rounded-[1.75rem] border border-[var(--hairline)] bg-[var(--card)];
+    box-shadow: 0 1px 2px rgba(36, 36, 36, 0.04), 0 12px 32px -20px rgba(36, 36, 36, 0.18);
+    }
+  /* Anel de marca em volta da foto — a mesma ideia de moldura por tempo de
+     casa do splitc-profile-picture, reduzida a um aro de 2px. */
+  .brand-ring {
+    @apply rounded-full p-[2px];
+    /* Mesma varredura de .brand-gradient — @apply não alcança classes de
+       componente no Tailwind v4, então a declaração é repetida aqui. */
+    background-image: linear-gradient(
+      100deg,
+      var(--brand-from),
+      var(--brand-mid) 45%,
+      var(--brand-to)
+    );
+    }
+  /* Sweep de carregamento: mesma animação do indeterminate do outro app,
+     aqui varrendo só o espaço reservado da foto. */
+  .sweep {
+    animation: sweep 1.5s ease-in-out infinite;
+    }
+  @keyframes sweep {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(300%); }
+    }
+  @media (prefers-reduced-motion: reduce) {
+    .sweep {
+      animation: none;
+      opacity: 0.5;
+      }
+    }
+}

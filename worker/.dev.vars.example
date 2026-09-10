@@ -1,0 +1,2 @@
+# Copie para worker/.dev.vars (ignorado pelo git) para rodar `wrangler dev`.
+NOTION_TOKEN=ntn_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
