@@ -62,6 +62,14 @@ export const SETOR = { tamanho: 16 * ESCALA_CANVA, entrelinha: 1.3, cor: '#fffff
 export const TEMPO = { tamanho: 16 * ESCALA_CANVA, entrelinha: 1.3, cor: '#ffffff', gapAcima: 2 }
 
 /**
+ * Quanto o bloco de cards é desenhado menor que a medida de projeto. Encolher o
+ * bloco inteiro, e não a largura do card, mantém a proporção entre foto, texto
+ * e borda — estreitar só o card deixaria a tipografia grande demais para ele e
+ * mandaria mais nomes para a abreviação.
+ */
+export const ESCALA_DO_CARD = 0.88
+
+/**
  * Faixa em que a grade é centralizada: da tinta do subtítulo até a borda de
  * baixo. Assim a folga acima e abaixo do bloco é a mesma, seja qual for a
  * quantidade de linhas — o card ficou mais alto quando a foto virou quadrada, e

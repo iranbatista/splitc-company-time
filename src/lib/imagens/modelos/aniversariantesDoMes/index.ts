@@ -6,6 +6,7 @@ import { distribuir } from '@/lib/imagens/modelos/aniversariantesDoMes/grade'
 import {
   AREA_DA_GRADE,
   CARD,
+  ESCALA_DO_CARD,
   FOTO,
   LARGURA_UTIL,
   LOGO,
@@ -134,9 +135,10 @@ function desenharGrade(
   const alturaBloco = grade.porLinha.length * altura + (grade.porLinha.length - 1) * CARD.gap
 
   const alturaDisponivel = AREA_DA_GRADE.base - AREA_DA_GRADE.topo
-  // Rede de proteção: acima de 12 pessoas a grade passa da arte. Reduzir o
-  // bloco inteiro mantém a proporção; cortar cards perderia gente.
-  const reducao = Math.min(1, alturaDisponivel / alturaBloco)
+  // ESCALA_DO_CARD é a redução de projeto; o segundo termo é rede de proteção,
+  // porque acima de 12 pessoas a grade passa da arte. Reduzir o bloco inteiro
+  // mantém a proporção; cortar cards perderia gente.
+  const reducao = Math.min(ESCALA_DO_CARD, alturaDisponivel / alturaBloco)
 
   const x0 = (TAMANHO.largura - larguraBloco * reducao) / 2
   const y0 = AREA_DA_GRADE.topo + (alturaDisponivel - alturaBloco * reducao) / 2
