@@ -37,10 +37,13 @@ export function caixaShape(altura: number): Caixa {
 /**
  * O fundo não entra em cover na arte inteira: no Canva ele está ESPELHADO na
  * horizontal, maior que a página e deslocado. Os números saíram de casar a
- * imagem de 4000x2250 contra o fundo já composto que o Canva exportava antes —
- * o resíduo cai a ruído de grão, sem estrutura, então o alinhamento confere.
+ * imagem original contra o fundo já composto que o Canva exportava antes — o
+ * resíduo cai a ruído de grão, sem estrutura, então o alinhamento confere.
+ *
+ * O enquadramento é dado pela largura desenhada, não por um fator de escala:
+ * assim trocar a resolução do arquivo não move a arte.
  */
-export const FUNDO_PRINCIPAL = { escala: 0.329, x: -116, y: -91, espelhado: true }
+export const FUNDO_PRINCIPAL = { largura: 1316, x: -116, y: -91, espelhado: true }
 
 /**
  * Dentro do shape a mesma imagem entra em cover da caixa dele, o que no
@@ -108,5 +111,5 @@ export function fonteOutfit(tamanho: number, negrito: boolean): string {
 }
 
 /** Servidos de `public/`, então o base path do Vite entra na URL. */
-export const URL_BACKGROUND = `${import.meta.env.BASE_URL}background.png`
+export const URL_BACKGROUND = `${import.meta.env.BASE_URL}background.webp`
 export const URL_LOGO = `${import.meta.env.BASE_URL}logo.png`

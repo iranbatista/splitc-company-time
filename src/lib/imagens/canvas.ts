@@ -7,23 +7,27 @@ const STOPS_MARCA: readonly [number, string][] = [
   [1, '#ea5518'],
 ]
 
-/** Onde, em que escala e em que sentido uma imagem entra na arte. */
+/**
+ * Onde e em que tamanho uma imagem entra na arte. O enquadramento é dado pela
+ * largura desenhada, e não por um fator de escala, para que trocar a resolução
+ * do arquivo não mova a arte.
+ */
 export interface Posicao {
-  escala: number
+  largura: number
   x: number
   y: number
   /** O Canva permite espelhar a imagem, e o fundo desta arte está espelhado. */
   espelhado?: boolean
 }
 
-/** Desenha a imagem inteira na escala e no deslocamento dados. */
+/** Desenha a imagem inteira na largura e no deslocamento dados. */
 export function desenharEscalado(
   ctx: CanvasRenderingContext2D,
   img: HTMLImageElement,
   posicao: Posicao,
 ): void {
-  const largura = img.naturalWidth * posicao.escala
-  const altura = img.naturalHeight * posicao.escala
+  const largura = posicao.largura
+  const altura = (img.naturalHeight * posicao.largura) / img.naturalWidth
   if (!posicao.espelhado) {
     ctx.drawImage(img, posicao.x, posicao.y, largura, altura)
     return

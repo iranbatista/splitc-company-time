@@ -275,11 +275,20 @@ Os números do Canva não caem direto em pixel, então a geometria em
 - O shape tem 662px de largura e margem de 63px à direita, como no Canva. A
   **altura é variável**: ele abraça o texto e fica centralizado na vertical.
 
-O fundo (`public/background.png`, 4000x2250) **não** entra em cover na arte
-inteira: no Canva ele está espelhado na horizontal, maior que a página e
-deslocado — `FUNDO_PRINCIPAL`. Esses números saíram de casar a imagem contra o
-fundo já composto que o Canva exportava antes; o resíduo cai a ruído de grão,
-sem estrutura, então o alinhamento confere.
+O fundo (`public/background.webp`) **não** entra em cover na arte inteira: no
+Canva ele está espelhado na horizontal, maior que a página e deslocado —
+`FUNDO_PRINCIPAL`. Esses números saíram de casar a imagem contra o fundo já
+composto que o Canva exportava antes; o resíduo cai a ruído de grão, sem
+estrutura, então o alinhamento confere. O enquadramento é dado pela **largura
+desenhada**, não por um fator de escala, para que trocar a resolução do arquivo
+não mova a arte.
+
+O original do Canva tem 4000x2250 e 6MB, o que o browser baixaria inteiro no
+primeiro clique. O que é servido é uma redução para 1500px em WebP, com 141KB:
+comparando a imagem gerada com uma e com outra, a diferença é grão uniforme, sem
+banding nem mudança de estrutura. O original fica em
+`docs/referencias/background-original.png`, fora de `public/`, então não vai para
+o `dist/`.
 
 Dentro do shape a mesma imagem entra em cover da caixa dele, o que dá um
 recorte bem mais fechado. É esse desencontro de enquadramento que separa os
