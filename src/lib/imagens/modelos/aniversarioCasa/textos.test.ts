@@ -43,8 +43,8 @@ describe('titulo2', () => {
 })
 
 describe('TITULO_1', () => {
-  it('é o texto da arte', () => {
-    expect(TITULO_1).toBe('Aniversário de empresa')
+  it('quebra depois da primeira palavra', () => {
+    expect(TITULO_1).toBe('Aniversário\nde empresa')
   })
 })
 
