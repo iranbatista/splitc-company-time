@@ -272,6 +272,9 @@ Os números do Canva não caem direto em pixel, então a geometria em
 - As âncoras verticais (base do Título 1, recuo do Título 2, entrelinha de 33px
   do corpo) são valores medidos. O Canva posiciona o texto pela caixa de linha
   dele, que não dá para reproduzir a partir das métricas do canvas.
+- A quebra do Título 1 é fixa no texto (`Aniversário` / `de empresa`), e não
+  resultado da largura: no export ela caía depois de "de". A largura máxima
+  segue valendo como limite, caso alguma linha estoure a coluna da esquerda.
 - O shape tem 662px de largura e margem de 63px à direita, como no Canva. A
   **altura é variável**: ele abraça o texto e fica centralizado na vertical.
 

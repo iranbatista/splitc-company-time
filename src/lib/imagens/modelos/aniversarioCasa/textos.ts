@@ -1,6 +1,7 @@
 import type { Bloco } from '@/lib/imagens/tipos'
 
-export const TITULO_1 = 'Aniversário de empresa'
+/** A quebra é fixa: sem ela a linha caberia inteira e o título viraria um bloco só. */
+export const TITULO_1 = 'Aniversário\nde empresa'
 
 export function titulo2(anos: number): string {
   return `Parabéns pelo seu ${anos}º ano na SplitC!`

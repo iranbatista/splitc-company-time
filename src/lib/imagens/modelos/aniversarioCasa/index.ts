@@ -199,10 +199,14 @@ function desenharTitulo1(ctx: CanvasRenderingContext2D): void {
   const fonte = () => fonteTitulo1()
   ctx.font = fonte()
 
-  const linhas = quebrarBloco(
-    [{ texto: TEXTO_TITULO_1, negrito: false }],
-    TITULO_1.larguraMax,
-    (texto: string) => ctx.measureText(texto).width,
+  // A quebra do título é dada no texto; a largura só entra como limite, caso
+  // alguma linha ainda estoure a coluna da esquerda.
+  const linhas = TEXTO_TITULO_1.split('\n').flatMap((linha) =>
+    quebrarBloco(
+      [{ texto: linha, negrito: false }],
+      TITULO_1.larguraMax,
+      (texto: string) => ctx.measureText(texto).width,
+    ),
   )
 
   const entrelinha = TITULO_1.tamanho * TITULO_1.entrelinha
