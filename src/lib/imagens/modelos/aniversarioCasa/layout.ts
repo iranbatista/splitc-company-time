@@ -63,15 +63,15 @@ export const LARGURA_CONTEUDO = LARGURA_SHAPE - PADDING_SHAPE * 2
 export const X_CONTEUDO = TAMANHO.largura - MARGEM - LARGURA_SHAPE + PADDING_SHAPE
 
 export const TITULO_1 = {
-  tamanho: 39.5 * ESCALA_CANVA,
-  entrelinha: 1.3,
+  tamanho: 46 * ESCALA_CANVA,
+  entrelinha: 0.99,
   x: MARGEM,
   /**
-   * Base da última linha: o bloco cresce para cima a partir daqui. Os 63px da
-   * margem valem para a caixa de linha do Canva, não para a linha de base; os
-   * 15px de diferença foram medidos contra o export.
+   * Onde a tinta da última linha termina. Ancorar pela tinta, e não pela linha
+   * de base, mantém os 63px de margem iguais quando o tamanho ou a entrelinha
+   * mudam — era o que um ajuste fixo em cima da linha de base não fazia.
    */
-  base: TAMANHO.altura - MARGEM - 15,
+  fimDaTinta: TAMANHO.altura - MARGEM,
   /** Vai da margem esquerda até a borda do shape. */
   larguraMax: TAMANHO.largura - MARGEM - LARGURA_SHAPE - MARGEM,
 }

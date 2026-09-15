@@ -198,20 +198,31 @@ function desenharConteudo(
 function desenharTitulo1(ctx: CanvasRenderingContext2D): void {
   const fonte = () => fonteTitulo1()
   ctx.font = fonte()
+  // Antes de medir, não só antes de desenhar: com 'top' herdado do corpo, o
+  // descent devolveria a altura da tinta inteira em vez do que passa da base.
+  ctx.textBaseline = 'alphabetic'
 
-  const linhas = quebrarBloco(
-    [{ texto: TEXTO_TITULO_1, negrito: false }],
-    TITULO_1.larguraMax,
-    (texto: string) => ctx.measureText(texto).width,
+  // A quebra do título é dada no texto; a largura só entra como limite, caso
+  // alguma linha ainda estoure a coluna da esquerda.
+  const linhas = TEXTO_TITULO_1.split('\n').flatMap((linha) =>
+    quebrarBloco(
+      [{ texto: linha, negrito: false }],
+      TITULO_1.larguraMax,
+      (texto: string) => ctx.measureText(texto).width,
+    ),
   )
 
   const entrelinha = TITULO_1.tamanho * TITULO_1.entrelinha
+
   // Ancorado na base: o bloco cresce para cima, então a primeira linha recua
-  // uma entrelinha por linha extra.
-  const primeiraBase = TITULO_1.base - (linhas.length - 1) * entrelinha
+  // uma entrelinha por linha extra. A descida vem da última linha de verdade,
+  // porque 'de casa' não tem descendente e 'de empresa' teria.
+  const ultima = linhas[linhas.length - 1].map((t) => t.texto).join('')
+  const descida = ctx.measureText(ultima).actualBoundingBoxDescent
+  const ultimaBase = TITULO_1.fimDaTinta - Math.max(descida, 0)
+  const primeiraBase = ultimaBase - (linhas.length - 1) * entrelinha
   const topo = primeiraBase - TITULO_1.tamanho
 
-  ctx.textBaseline = 'alphabetic'
   ctx.fillStyle = gradiente135(ctx, {
     x: TITULO_1.x,
     y: topo,
