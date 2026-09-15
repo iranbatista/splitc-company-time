@@ -275,6 +275,13 @@ Os números do Canva não caem direto em pixel, então a geometria em
 - O shape tem 662px de largura e margem de 63px à direita, como no Canva. A
   **altura é variável**: ele abraça o texto e fica centralizado na vertical.
 
+O shape leva um contorno claro de 1,5px e um véu escuro por baixo do texto. O
+recorte ampliado do próprio fundo, sozinho, deixa a razão de luminância entre
+fora e dentro na linha da borda em 1,0–1,04 — uma borda de UI pede 3:1. Num
+fundo quase preto, escurecer o shape não separa nada (os dois lados continuam
+pretos); só um traço claro cria degrau. Os dois valores estão em
+`CONTORNO_SHAPE` e `VEU_SHAPE`.
+
 A altura fixa de 475px do Canva foi feita em cima do texto de 7 anos, e a copy
 de 5 anos é uma linha mais longa do que isso comporta — com o shape fixo, a
 tinta passava da borda. Com o shape flexível, as sete copies saem na mesma

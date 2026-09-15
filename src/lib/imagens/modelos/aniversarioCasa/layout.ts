@@ -22,6 +22,18 @@ export const LOGO: Caixa = { x: MARGEM, y: MARGEM, largura: 177, altura: 66 }
  */
 export const LARGURA_SHAPE = 662
 export const RAIO_SHAPE = 32
+
+/**
+ * O shape é um recorte ampliado do próprio fundo, então a borda dele quase
+ * some: medindo a arte original, a razão de luminância entre fora e dentro na
+ * linha da borda fica em 1.0–1.04, contra os 3:1 que uma borda de UI pede.
+ *
+ * Num fundo quase preto, escurecer o shape não resolve — os dois lados
+ * continuam pretos. O que separa é um traço claro. O véu escuro entra só para
+ * firmar o texto sobre a textura, por baixo da tipografia.
+ */
+export const CONTORNO_SHAPE = { cor: 'rgba(255, 255, 255, 0.14)', espessura: 1.5 }
+export const VEU_SHAPE = 'rgba(0, 0, 0, 0.22)'
 export const PADDING_SHAPE = 40
 export const GAP_TITULO_CORPO = 20
 
