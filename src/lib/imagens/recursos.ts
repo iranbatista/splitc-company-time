@@ -19,6 +19,9 @@ export function carregarImagem(url: string): Promise<HTMLImageElement> {
 
   const promessa = new Promise<HTMLImageElement>((resolver, rejeitar) => {
     const img = new Image()
+    // Sem isto o canvas fica contaminado por qualquer imagem de outra origem e
+    // o toBlob passa a lançar. Em imagem da mesma origem não muda nada.
+    img.crossOrigin = 'anonymous'
     img.onload = () => resolver(img)
     img.onerror = () => rejeitar(new Error(`Não foi possível carregar a imagem ${url}.`))
     img.src = url

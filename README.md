@@ -244,6 +244,45 @@ envolvido: o texto sai do tempo de casa e do primeiro nome que a lista já tem.
 O motor fica em `src/lib/imagens/` e não conhece nenhuma arte. Ele carrega os
 recursos que o modelo declara, cria o canvas no tamanho dele e chama `desenhar`.
 
+Há duas artes:
+
+| Arte | Onde | Tamanho |
+| --- | --- | --- |
+| Aniversário individual | botão em cada card | 1200x627 |
+| Aniversariantes do mês | botão abaixo do seletor de mês | 1920x1080 |
+
+### Fotos passam pelo proxy
+
+O S3 do Notion serve as fotos **sem header de CORS**. Elas aparecem na lista sem
+problema, mas desenhar uma delas contamina o canvas e o `toBlob` passa a lançar
+`SecurityError` — com `crossOrigin="anonymous"` a imagem simplesmente não
+carrega. Sem contornar isso, a peça do mês não teria fotos.
+
+Por isso existe a rota `/foto` no Worker (e o middleware equivalente no dev
+server): ela busca a foto no servidor e devolve com CORS. É o tipo de rota que
+vira proxy aberto, então aceita **só https**, **só os hosts de arquivo do
+Notion** comparados por igualdade (um `endsWith` aceitaria
+`...amazonaws.com.mal.com`), **não segue redirect** — seguir tiraria o host final
+do alcance da allowlist — e recusa resposta que não seja imagem ou que passe do
+teto de tamanho.
+
+Foto hospedada fora do Notion (bloco `image` do tipo `external`) não passa, e o
+card cai no placeholder de iniciais.
+
+A lista continua usando a URL original: exibir na tela não precisa de CORS, e
+assim a navegação normal não passa pelo proxy.
+
+### Grade da peça do mês
+
+`grade.ts` decide a distribuição: no máximo 6 colunas, enchendo o mínimo de
+linhas e depois equilibrando — 7 pessoas viram 4+3, e não 6+1. As linhas ficam
+alinhadas à esquerda entre si e o bloco inteiro é centralizado pela linha mais
+cheia. Acima de 12 pessoas o bloco passaria da altura da arte, e aí ele é
+reduzido proporcionalmente em vez de cortar gente.
+
+Nome que não cabe na largura do card desce uma escada de abreviação: sobrenomes
+viram inicial de trás para frente e depois somem, até sobrar o primeiro nome.
+
 Para acrescentar uma arte nova:
 
 1. Crie `src/lib/imagens/modelos/<nome>/` com um `index.ts` que exporta um

@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { BotaoImagemDoMes } from '@/components/BotaoImagemDoMes'
 import { EmptyState } from '@/components/EmptyState'
 import { ErrorState } from '@/components/ErrorState'
 import { Header } from '@/components/Header'
@@ -51,6 +52,14 @@ export default function App() {
         contagens={erro ? null : contagens}
         anoBase={atual.ano}
       />
+
+      {!erro && !carregando && aniversariantes.length > 0 && (
+        <BotaoImagemDoMes
+          mes={selecionado}
+          pessoas={aniversariantes}
+          carregandoFotos={carregandoFotos}
+        />
+      )}
 
       {erro ? (
         <ErrorState erro={erro} onRetry={recarregar} />
