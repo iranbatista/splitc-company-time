@@ -46,7 +46,8 @@ export const CARD = {
   padding: 16,
   raio: 20,
   borda: 3,
-  gap: 16,
+  /** Medida de projeto: na arte ele sai multiplicado por ESCALA_DO_CARD. */
+  gap: 24,
 }
 
 /**
