@@ -44,7 +44,7 @@ describe('titulo2', () => {
 
 describe('TITULO_1', () => {
   it('quebra depois da primeira palavra', () => {
-    expect(TITULO_1).toBe('Aniversário\nde empresa')
+    expect(TITULO_1).toBe('Aniversário\nde casa')
   })
 })
 
