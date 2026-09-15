@@ -15,31 +15,41 @@ export function tempoDeCasa(anos: number): string {
 export type Cabe = (texto: string) => boolean
 
 /**
- * Candidatos de nome, do mais completo ao mais curto. Os sobrenomes viram
- * inicial de trás para frente e depois somem, até sobrar só o primeiro nome —
- * é a escada que o export percorreu à mão em "Guilherme A.".
+ * Partículas que se colam ao sobrenome. Ficam junto do último nome, senão
+ * "Maria de Souza" viraria "Maria Souza" e "João da Silva", "João Silva".
  */
-export function candidatosDeNome(nome: string): string[] {
+const PARTICULAS = new Set([
+  'de', 'da', 'do', 'das', 'dos',
+  'e',
+  'di', 'du', 'del', 'della', 'dalla',
+  'la', 'le', 'van', 'von', 'y',
+])
+
+/**
+ * Primeiro e último nome, com a partícula que vier antes do último. Nomes do
+ * meio saem: abreviar em iniciais ("Guilherme A. S.") ficava ruim de ler.
+ */
+export function nomeCurto(nome: string): string {
   const partes = nome.trim().split(/\s+/).filter(Boolean)
-  if (partes.length === 0) return ['']
-  if (partes.length === 1) return [partes[0]]
+  if (partes.length <= 2) return partes.join(' ')
 
-  const [primeiro, ...resto] = partes
-  const candidatos = [partes.join(' ')]
-
-  // Abrevia do último sobrenome para o primeiro.
-  const atual = [...resto]
-  for (let i = atual.length - 1; i >= 0; i -= 1) {
-    atual[i] = `${atual[i][0]}.`
-    candidatos.push([primeiro, ...atual].join(' '))
+  let inicioDoSobrenome = partes.length - 1
+  // Anda para trás enquanto for partícula, sem nunca comer o primeiro nome.
+  while (
+    inicioDoSobrenome - 1 > 0 &&
+    PARTICULAS.has(partes[inicioDoSobrenome - 1].toLowerCase())
+  ) {
+    inicioDoSobrenome -= 1
   }
 
-  // Depois vai soltando as iniciais, da última para a primeira.
-  for (let quantas = atual.length - 1; quantas >= 0; quantas -= 1) {
-    candidatos.push([primeiro, ...atual.slice(0, quantas)].join(' '))
-  }
+  return [partes[0], ...partes.slice(inicioDoSobrenome)].join(' ')
+}
 
-  return [...new Set(candidatos)]
+/** Do nome curto para o primeiro nome, se nem ele couber no card. */
+export function candidatosDeNome(nome: string): string[] {
+  const curto = nomeCurto(nome)
+  const primeiro = curto.split(' ')[0] ?? ''
+  return [...new Set([curto, primeiro])]
 }
 
 /** O primeiro candidato que couber; se nenhum couber, o mais curto. */

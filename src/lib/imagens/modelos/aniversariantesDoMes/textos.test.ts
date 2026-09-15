@@ -5,6 +5,7 @@ import {
   comReticencia,
   encurtarNome,
   encurtarSetores,
+  nomeCurto,
   subtitulo,
   tempoDeCasa,
 } from '@/lib/imagens/modelos/aniversariantesDoMes/textos'
@@ -31,13 +32,44 @@ describe('TITULO', () => {
   })
 })
 
+describe('nomeCurto', () => {
+  it('fica com o primeiro e o último, largando os do meio', () => {
+    expect(nomeCurto('Guilherme Almeida Souza')).toBe('Guilherme Souza')
+    expect(nomeCurto('Alícia Costa Moura')).toBe('Alícia Moura')
+  })
+
+  it('não mexe em nome de uma ou duas palavras', () => {
+    expect(nomeCurto('Mel')).toBe('Mel')
+    expect(nomeCurto('Felipe Ramirez')).toBe('Felipe Ramirez')
+  })
+
+  it('mantém a partícula colada ao sobrenome', () => {
+    expect(nomeCurto('Maria de Souza')).toBe('Maria de Souza')
+    expect(nomeCurto('Ana Paula dos Santos')).toBe('Ana dos Santos')
+    expect(nomeCurto('João Pedro da Silva')).toBe('João da Silva')
+  })
+
+  it('leva mais de uma partícula quando vierem seguidas', () => {
+    expect(nomeCurto('Maria Fernanda de la Cruz')).toBe('Maria de la Cruz')
+  })
+
+  it('ignora maiúscula na partícula', () => {
+    expect(nomeCurto('Ana Carolina De Souza')).toBe('Ana De Souza')
+  })
+
+  it('não come o primeiro nome quando ele vem seguido de partícula', () => {
+    expect(nomeCurto('Ana de Souza')).toBe('Ana de Souza')
+  })
+
+  it('lida com espaços sobrando', () => {
+    expect(nomeCurto('  Ana   Paula   Lima ')).toBe('Ana Lima')
+  })
+})
+
 describe('candidatosDeNome', () => {
-  it('abrevia do último sobrenome para o primeiro e depois solta as iniciais', () => {
+  it('desce do nome curto para o primeiro nome', () => {
     expect(candidatosDeNome('Guilherme Almeida Souza')).toEqual([
-      'Guilherme Almeida Souza',
-      'Guilherme Almeida S.',
-      'Guilherme A. S.',
-      'Guilherme A.',
+      'Guilherme Souza',
       'Guilherme',
     ])
   })
@@ -45,20 +77,19 @@ describe('candidatosDeNome', () => {
   it('nome de uma palavra só não tem o que encurtar', () => {
     expect(candidatosDeNome('Mel')).toEqual(['Mel'])
   })
-
-  it('lida com espaços sobrando', () => {
-    expect(candidatosDeNome('  Ana   Paula  ')).toEqual(['Ana Paula', 'Ana P.', 'Ana'])
-  })
 })
 
 describe('encurtarNome', () => {
-  it('devolve o nome inteiro quando cabe', () => {
+  it('devolve o nome quando ele já é primeiro e último', () => {
     expect(encurtarNome('Alice Santos', ate(30))).toBe('Alice Santos')
   })
 
-  it('desce a escada até caber', () => {
-    // 'Guilherme Almeida S.' tem 20; com teto de 14 sobra 'Guilherme A.' (12).
-    expect(encurtarNome('Guilherme Almeida Souza', ate(14))).toBe('Guilherme A.')
+  it('usa primeiro e último mesmo quando o nome inteiro caberia', () => {
+    expect(encurtarNome('Guilherme Almeida Souza', ate(40))).toBe('Guilherme Souza')
+  })
+
+  it('cai no primeiro nome quando nem o curto cabe', () => {
+    expect(encurtarNome('Guilherme Almeida Souza', ate(14))).toBe('Guilherme')
   })
 
   it('devolve o mais curto quando nada cabe', () => {

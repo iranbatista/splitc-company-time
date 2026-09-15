@@ -280,8 +280,9 @@ centralizada na largura do bloco, que por sua vez é centralizado na arte: uma
 linha incompleta fica no meio das de cima. Acima de 12 pessoas o bloco passaria da altura da arte, e aí ele é
 reduzido proporcionalmente em vez de cortar gente.
 
-Nome que não cabe na largura do card desce uma escada de abreviação: sobrenomes
-viram inicial de trás para frente e depois somem, até sobrar o primeiro nome.
+O nome no card é sempre primeiro e último, com a partícula que vier antes do
+último (`Maria de Souza`, `Ana dos Santos`) — abreviar em iniciais ficava ruim de
+ler. Se nem isso couber na largura do card, sobra o primeiro nome.
 
 Para acrescentar uma arte nova:
 
