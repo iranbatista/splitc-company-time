@@ -223,7 +223,7 @@ em branco separa parágrafos.
 ```
 {nome}, há um ano você topou fazer parte dessa jornada. Entre aprendizados, novidades e muitos desafios, você começou a construir a sua história por aqui e deu os primeiros passos vivendo a nossa cultura.
 
-Obrigada por fazer parte do nosso time e por se mover rápido desde o primeiro dia. Esse é só o começo da sua jornada!
+Obrigado por fazer parte do nosso time e por se mover rápido desde o primeiro dia. Esse é só o começo da sua jornada!
 
 Com carinho,
 SplitC
@@ -234,7 +234,7 @@ SplitC
 ```
 Em dois anos, muita coisa muda. Hoje você já conhece nossos desafios, ajuda a encontrar caminhos e faz parte das decisões que movem a SplitC todos os dias.
 
-{nome}, obrigada por fazer parte do nosso time e por demonstrar ownership em tudo o que faz. Que venham muitos anos construindo essa história com a gente!
+{nome}, obrigado por fazer parte do nosso time e por demonstrar ownership em tudo o que faz. Que venham muitos anos construindo essa história com a gente!
 
 Com carinho,
 SplitC
@@ -245,7 +245,7 @@ SplitC
 ```
 Três anos representam uma trajetória de evolução constante. Você acompanhou mudanças, compartilhou conhecimento e ajudou a elevar o nível do nosso time com a busca por excelência.
 
-{nome}, obrigada por fazer parte do nosso time e por crescer junto com a SplitC. Seu trabalho faz diferença todos os dias.
+{nome}, obrigado por fazer parte do nosso time e por crescer junto com a SplitC. Seu trabalho faz diferença todos os dias.
 
 Com carinho,
 SplitC
@@ -256,7 +256,7 @@ SplitC
 ```
 {nome}, ao longo desses quatro anos, você ajudou a construir relações, fortalecer nosso jeito de trabalhar e gerar impacto para quem mais importa: nossos clientes.
 
-Obrigada por fazer parte do nosso time e por colocar o cliente no centro de cada entrega. É muito bom ter você construindo essa história com a gente.
+Obrigado por fazer parte do nosso time e por colocar o cliente no centro de cada entrega. É muito bom ter você construindo essa história com a gente.
 
 Com carinho,
 SplitC
@@ -267,7 +267,7 @@ SplitC
 ```
 Cinco anos é muita história pra contar. Você acompanhou mudanças, viu a SplitC crescer e, mais importante, ajudou a construir boa parte do que somos hoje.
 
-{nome}, obrigada por fazer parte do nosso time e por viver nossos valores todos os dias, sempre com ownership, excelência e vontade de fazer acontecer. Bora pros próximos capítulos!
+{nome}, obrigado por fazer parte do nosso time e por viver nossos valores todos os dias, sempre com ownership, excelência e vontade de fazer acontecer. Bora pros próximos capítulos!
 
 Com carinho,
 SplitC
@@ -278,7 +278,7 @@ SplitC
 ```
 {nome}, seis anos não acontecem por acaso. É tempo de construir confiança, criar boas histórias e deixar sua marca por onde passa.
 
-Obrigada por fazer parte do nosso time e por seguir se movendo rápido, buscando excelência e contribuindo para que nossos clientes tenham a melhor experiência. É muito bom ter você com a gente!
+Obrigado por fazer parte do nosso time e por seguir se movendo rápido, buscando excelência e contribuindo para que nossos clientes tenham a melhor experiência. É muito bom ter você com a gente!
 
 Com carinho,
 SplitC
@@ -289,7 +289,7 @@ SplitC
 ```
 Sete anos... isso é muita coisa! Você acompanhou diferentes fases da SplitC, viu muita coisa mudar e fez parte de cada uma delas.
 
-{nome}, obrigada por fazer parte do nosso time e por seguir construindo essa história com ownership, parceria e foco em fazer o melhor para nossos clientes. Que venham muitos anos pela frente!
+{nome}, obrigado por fazer parte do nosso time e por seguir construindo essa história com ownership, parceria e foco em fazer o melhor para nossos clientes. Que venham muitos anos pela frente!
 
 Com carinho,
 SplitC
