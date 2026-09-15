@@ -15,44 +15,30 @@ export const ESCALA_CANVA = 1200 / 875
 export const LOGO: Caixa = { x: MARGEM, y: MARGEM, largura: 177, altura: 66 }
 
 /**
- * O `y` sai de `627 - 63 - 475`. A spec original dizia "63 do topo", o que não
- * fecha com 475 de altura em 627 de canvas; a referência confirma 89. Manda
- * base + altura.
+ * O shape tem largura fixa e altura variável: ele abraça o texto e fica
+ * centralizado na vertical. A arte do Canva tinha altura fixa de 475px, feita
+ * em cima do texto de 7 anos — com ela, a copy de 5 anos (uma linha mais longa)
+ * passava da borda.
  */
-export const SHAPE: Caixa = {
-  x: TAMANHO.largura - MARGEM - 662,
-  y: TAMANHO.altura - MARGEM - 475,
-  largura: 662,
-  altura: 475,
-}
-
+export const LARGURA_SHAPE = 662
 export const RAIO_SHAPE = 32
-
-/**
- * Folga entre a última linha do corpo e a borda de baixo do shape. O canto
- * arredondado tem 32px, então encostar a tinta na borda deixaria a última linha
- * visualmente dentro da curva.
- */
-export const FOLGA_CORPO = 16
 export const PADDING_SHAPE = 40
 export const GAP_TITULO_CORPO = 20
 
-/** Área útil dentro do shape, já descontado o padding. */
-export const CONTEUDO = {
-  x: SHAPE.x + PADDING_SHAPE,
-  y: SHAPE.y + PADDING_SHAPE,
-  largura: SHAPE.largura - PADDING_SHAPE * 2,
+export function caixaShape(altura: number): Caixa {
+  return {
+    x: TAMANHO.largura - MARGEM - LARGURA_SHAPE,
+    y: Math.round((TAMANHO.altura - altura) / 2),
+    largura: LARGURA_SHAPE,
+    altura,
+  }
 }
 
-/** Onde a tinta do corpo tem de parar. */
-export const LIMITE_CORPO = SHAPE.y + SHAPE.altura - FOLGA_CORPO
+/** Largura útil do texto: a do shape menos o padding dos dois lados. */
+export const LARGURA_CONTEUDO = LARGURA_SHAPE - PADDING_SHAPE * 2
 
-/**
- * Degraus de tipografia do corpo, do tamanho da referência até 80%. A lista é
- * montada a partir de contagem inteira: somar -0.02 repetidamente acumula erro
- * de ponto flutuante e o último degrau nunca chegaria a 0,8.
- */
-export const ESCALAS_CORPO = Array.from({ length: 11 }, (_, passo) => 1 - passo * 0.02)
+/** X do texto, fixo porque a largura do shape é fixa. */
+export const X_CONTEUDO = TAMANHO.largura - MARGEM - LARGURA_SHAPE + PADDING_SHAPE
 
 export const TITULO_1 = {
   tamanho: 39.5 * ESCALA_CANVA,
@@ -65,7 +51,7 @@ export const TITULO_1 = {
    */
   base: TAMANHO.altura - MARGEM - 15,
   /** Vai da margem esquerda até a borda do shape. */
-  larguraMax: SHAPE.x - MARGEM,
+  larguraMax: TAMANHO.largura - MARGEM - LARGURA_SHAPE - MARGEM,
 }
 
 export const TITULO_2 = {

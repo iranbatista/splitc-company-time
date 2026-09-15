@@ -7,20 +7,20 @@ import {
 } from '@/lib/imagens/canvas'
 import { quebrarBloco } from '@/lib/imagens/medidas'
 import {
-  CONTEUDO,
   CORPO,
-  ESCALAS_CORPO,
   GAP_TITULO_CORPO,
-  LIMITE_CORPO,
+  LARGURA_CONTEUDO,
   LOGO,
+  PADDING_SHAPE,
   RAIO_SHAPE,
-  SHAPE,
   TAMANHO,
   TITULO_1,
   TITULO_2,
   TRACKING,
   URL_BACKGROUND,
   URL_LOGO,
+  X_CONTEUDO,
+  caixaShape,
   fonteOutfit,
   fonteTitulo1,
 } from '@/lib/imagens/modelos/aniversarioCasa/layout'
@@ -73,36 +73,134 @@ export const aniversarioCasa: Modelo<ParamsAniversario> = {
     const logo = recursos.imagens.get(URL_LOGO)
     if (!fundo || !logo) throw new Error('Recursos da arte não carregados.')
 
-    // O background já vem em 1200x627, então é desenho 1:1.
     // Vale para todo o texto da arte, e precisa valer também nas medições:
     // measureText respeita o letterSpacing corrente.
     ctx.letterSpacing = TRACKING
+    ctx.textBaseline = 'top'
 
+    // O shape abraça o texto, então o conteúdo é medido antes de haver shape.
+    const conteudo = medirConteudo(ctx, anos, primeiroNome(nome))
+    const shape = caixaShape(conteudo.altura)
+
+    // O background já vem em 1200x627, então é desenho 1:1.
     ctx.drawImage(fundo, 0, 0, TAMANHO.largura, TAMANHO.altura)
     ctx.drawImage(logo, LOGO.x, LOGO.y, LOGO.largura, LOGO.altura)
 
     // O mesmo fundo em cover dentro do shape: o zoom do recorte é o que cria o
     // contraste com o fundo principal.
     ctx.save()
-    caixaArredondada(ctx, SHAPE, RAIO_SHAPE)
+    caixaArredondada(ctx, shape, RAIO_SHAPE)
     ctx.clip()
-    coverEm(ctx, fundo, SHAPE)
+    coverEm(ctx, fundo, shape)
     ctx.restore()
 
+    desenharConteudo(ctx, conteudo, shape.y)
     desenharTitulo1(ctx)
-    desenharConteudo(ctx, anos, primeiroNome(nome))
   },
+}
+
+/** Tudo que o shape precisa conter, com os deslocamentos a partir do topo dele. */
+interface Conteudo {
+  linhasTitulo: Linha[]
+  entrelinhaTitulo: number
+  deslocamentoTitulo: number
+  blocosCorpo: Linha[][]
+  entrelinhaCorpo: number
+  deslocamentoCorpo: number
+  altura: number
+}
+
+function medirConteudo(ctx: CanvasRenderingContext2D, anos: number, nome: string): Conteudo {
+  const fonteTitulo = (negrito: boolean) => fonteOutfit(TITULO_2.tamanho, negrito)
+  const fonteCorpo = (negrito: boolean) => fonteOutfit(CORPO.tamanho, negrito)
+
+  ctx.font = fonteTitulo(true)
+  const texto = titulo2(anos)
+  const linhasTitulo = quebrarBloco(
+    [{ texto, negrito: true }],
+    LARGURA_CONTEUDO,
+    (t: string) => ctx.measureText(t).width,
+  )
+  const entrelinhaTitulo = TITULO_2.tamanho * TITULO_2.entrelinha
+  const deslocamentoTitulo = PADDING_SHAPE + TITULO_2.recuoTopo
+
+  // O gap de 20px separa as caixas de tinta, como o Canva empilha os elementos,
+  // e não as caixas de linha. Por isso a posição do corpo sai das métricas reais
+  // do texto desenhado, não da altura nominal da linha.
+  const baseTitulo =
+    deslocamentoTitulo +
+    (linhasTitulo.length - 1) * entrelinhaTitulo +
+    ctx.measureText(texto).actualBoundingBoxDescent
+
+  const entrelinhaCorpo = CORPO.tamanho * CORPO.entrelinha
+  const blocosCorpo = corpo(anos, nome).map((bloco) =>
+    quebrarBloco(bloco, LARGURA_CONTEUDO, (t: string, negrito: boolean) => {
+      ctx.font = fonteCorpo(negrito)
+      return ctx.measureText(t).width
+    }),
+  )
+
+  ctx.font = fonteCorpo(false)
+  // Com textBaseline 'top' a tinta começa abaixo do y pedido, e o ascent vem
+  // negativo justamente com essa distância.
+  const recuoTinta = -ctx.measureText('A').actualBoundingBoxAscent
+  const descida = ctx.measureText('Sg').actualBoundingBoxDescent
+  const deslocamentoCorpo = baseTitulo + GAP_TITULO_CORPO - recuoTinta
+
+  const linhas = blocosCorpo.reduce((soma, bloco) => soma + bloco.length, 0)
+  const fimDaTinta = deslocamentoCorpo + (linhas - 1) * entrelinhaCorpo + descida
+
+  return {
+    linhasTitulo,
+    entrelinhaTitulo,
+    deslocamentoTitulo,
+    blocosCorpo,
+    entrelinhaCorpo,
+    deslocamentoCorpo,
+    altura: Math.round(fimDaTinta + PADDING_SHAPE),
+  }
+}
+
+function desenharConteudo(
+  ctx: CanvasRenderingContext2D,
+  conteudo: Conteudo,
+  topoDoShape: number,
+): void {
+  const fonteTitulo = (negrito: boolean) => fonteOutfit(TITULO_2.tamanho, negrito)
+  const fonteCorpo = (negrito: boolean) => fonteOutfit(CORPO.tamanho, negrito)
+
+  const yTitulo = topoDoShape + conteudo.deslocamentoTitulo
+  ctx.fillStyle = gradiente135(ctx, {
+    x: X_CONTEUDO,
+    y: yTitulo,
+    largura: larguraMaxima(ctx, conteudo.linhasTitulo, fonteTitulo),
+    altura: conteudo.linhasTitulo.length * conteudo.entrelinhaTitulo,
+  })
+  desenharLinhas(
+    ctx,
+    conteudo.linhasTitulo,
+    X_CONTEUDO,
+    yTitulo,
+    conteudo.entrelinhaTitulo,
+    fonteTitulo,
+  )
+
+  ctx.fillStyle = CORPO.cor
+  let y = topoDoShape + conteudo.deslocamentoCorpo
+  for (const bloco of conteudo.blocosCorpo) {
+    desenharLinhas(ctx, bloco, X_CONTEUDO, y, conteudo.entrelinhaCorpo, fonteCorpo)
+    y += bloco.length * conteudo.entrelinhaCorpo
+  }
 }
 
 function desenharTitulo1(ctx: CanvasRenderingContext2D): void {
   const fonte = () => fonteTitulo1()
   ctx.font = fonte()
-  const medir = (texto: string) => ctx.measureText(texto).width
 
   const linhas = quebrarBloco(
     [{ texto: TEXTO_TITULO_1, negrito: false }],
     TITULO_1.larguraMax,
-    medir,
+    (texto: string) => ctx.measureText(texto).width,
   )
 
   const entrelinha = TITULO_1.tamanho * TITULO_1.entrelinha
@@ -119,99 +217,4 @@ function desenharTitulo1(ctx: CanvasRenderingContext2D): void {
     altura: linhas.length * entrelinha,
   })
   desenharLinhas(ctx, linhas, TITULO_1.x, primeiraBase, entrelinha, fonte)
-}
-
-interface CorpoAjustado {
-  blocos: Linha[][]
-  entrelinha: number
-  fonte: (negrito: boolean) => string
-  y: number
-}
-
-/**
- * A arte foi desenhada em cima do texto de 7 anos. O de 5 anos é uma linha mais
- * longo do que o shape comporta, então esse ano (e só ele) desce degraus de
- * tipografia até a última linha caber. Os outros seis saem no tamanho original.
- */
-function ajustarCorpo(
-  ctx: CanvasRenderingContext2D,
-  anos: number,
-  nome: string,
-  baseTitulo: number,
-): CorpoAjustado {
-  const blocosDeTexto = corpo(anos, nome)
-  let ultimo: CorpoAjustado | null = null
-
-  for (const escala of ESCALAS_CORPO) {
-    const tamanho = CORPO.tamanho * escala
-    const entrelinha = CORPO.tamanho * CORPO.entrelinha * escala
-    const fonte = (negrito: boolean) => fonteOutfit(tamanho, negrito)
-
-    const medir = (texto: string, negrito: boolean) => {
-      ctx.font = fonte(negrito)
-      return ctx.measureText(texto).width
-    }
-    const blocos = blocosDeTexto.map((bloco) => quebrarBloco(bloco, CONTEUDO.largura, medir))
-
-    ctx.font = fonte(false)
-    // Com textBaseline 'top' a tinta começa abaixo do y pedido, e o ascent vem
-    // negativo justamente com essa distância.
-    const recuoTinta = -ctx.measureText('A').actualBoundingBoxAscent
-    const descida = ctx.measureText('Sg').actualBoundingBoxDescent
-    const y = baseTitulo + GAP_TITULO_CORPO - recuoTinta
-
-    const linhas = blocos.reduce((soma, bloco) => soma + bloco.length, 0)
-    ultimo = { blocos, entrelinha, fonte, y }
-
-    if (y + (linhas - 1) * entrelinha + descida <= LIMITE_CORPO) break
-  }
-
-  // Se nem o menor degrau coubesse, sai o menor mesmo — uma copy nova longa
-  // demais é problema de texto, não motivo para não gerar a imagem.
-  if (!ultimo) throw new Error('ESCALAS_CORPO está vazio.')
-  return ultimo
-}
-
-function desenharConteudo(ctx: CanvasRenderingContext2D, anos: number, nome: string): void {
-  // 'top' porque aqui o texto flui para baixo a partir do padding do shape;
-  // o Título 1, ancorado na base, usa 'alphabetic'.
-  ctx.textBaseline = 'top'
-
-  const fonteT2 = (negrito: boolean) => fonteOutfit(TITULO_2.tamanho, negrito)
-
-  ctx.font = fonteT2(true)
-  const medirT2 = (texto: string) => ctx.measureText(texto).width
-  const linhasT2 = quebrarBloco(
-    [{ texto: titulo2(anos), negrito: true }],
-    CONTEUDO.largura,
-    medirT2,
-  )
-  const entrelinhaT2 = TITULO_2.tamanho * TITULO_2.entrelinha
-  const yTitulo2 = CONTEUDO.y + TITULO_2.recuoTopo
-
-  ctx.fillStyle = gradiente135(ctx, {
-    x: CONTEUDO.x,
-    y: yTitulo2,
-    largura: larguraMaxima(ctx, linhasT2, fonteT2),
-    altura: linhasT2.length * entrelinhaT2,
-  })
-  desenharLinhas(ctx, linhasT2, CONTEUDO.x, yTitulo2, entrelinhaT2, fonteT2)
-
-  // O gap de 20px separa as caixas de tinta, como o Canva empilha os elementos,
-  // e não as caixas de linha. Por isso a posição do corpo sai das métricas reais
-  // do texto desenhado, não da altura nominal da linha.
-  ctx.font = fonteT2(true)
-  const baseTitulo =
-    yTitulo2 +
-    (linhasT2.length - 1) * entrelinhaT2 +
-    ctx.measureText(titulo2(anos)).actualBoundingBoxDescent
-
-  const ajustado = ajustarCorpo(ctx, anos, nome, baseTitulo)
-
-  ctx.fillStyle = CORPO.cor
-  let y = ajustado.y
-  for (const blocoDeLinhas of ajustado.blocos) {
-    desenharLinhas(ctx, blocoDeLinhas, CONTEUDO.x, y, ajustado.entrelinha, ajustado.fonte)
-    y += blocoDeLinhas.length * ajustado.entrelinha
-  }
 }

@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest'
 import { aniversarioCasa } from '@/lib/imagens/modelos/aniversarioCasa'
-import { ESCALAS_CORPO } from '@/lib/imagens/modelos/aniversarioCasa/layout'
 
 describe('aplicavel', () => {
   it('vale de 1 a 7 anos', () => {
@@ -26,20 +25,5 @@ describe('nomeArquivo', () => {
     expect(aniversarioCasa.nomeArquivo({ nome: 'Mel Ferreira Conceição', anos: 3 })).toBe(
       'aniversario-mel-ferreira-conceicao-3-anos.png',
     )
-  })
-})
-
-describe('ESCALAS_CORPO', () => {
-  it('vai de 100% a 80%', () => {
-    // O laço antigo somava -0.02 repetidamente e parava em 0,82: o erro de
-    // ponto flutuante fazia o último degrau falhar na comparação.
-    expect(ESCALAS_CORPO[0]).toBe(1)
-    expect(ESCALAS_CORPO[ESCALAS_CORPO.length - 1]).toBeCloseTo(0.8, 10)
-  })
-
-  it('desce sempre, sem repetir degrau', () => {
-    for (let i = 1; i < ESCALAS_CORPO.length; i += 1) {
-      expect(ESCALAS_CORPO[i]).toBeLessThan(ESCALAS_CORPO[i - 1])
-    }
   })
 })

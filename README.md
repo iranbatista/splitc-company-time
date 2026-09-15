@@ -272,12 +272,13 @@ Os números do Canva não caem direto em pixel, então a geometria em
 - As âncoras verticais (base do Título 1, recuo do Título 2, entrelinha de 33px
   do corpo) são valores medidos. O Canva posiciona o texto pela caixa de linha
   dele, que não dá para reproduzir a partir das métricas do canvas.
-- O shape fica em 475,89 com 662x475. A spec dizia "63 do topo", o que não fecha
-  com 475 de altura em 627 de canvas; vale base + altura, e o export confirma.
+- O shape tem 662px de largura e margem de 63px à direita, como no Canva. A
+  **altura é variável**: ele abraça o texto e fica centralizado na vertical.
 
-A arte foi desenhada em cima do texto de 7 anos. O de 5 anos é uma linha mais
-longo do que o shape comporta, então só esse ano desce degraus de tipografia até
-caber — os outros seis saem no tamanho da referência.
+A altura fixa de 475px do Canva foi feita em cima do texto de 7 anos, e a copy
+de 5 anos é uma linha mais longa do que isso comporta — com o shape fixo, a
+tinta passava da borda. Com o shape flexível, as sete copies saem na mesma
+tipografia e cada peça respira conforme o tamanho do texto.
 
 ## Scripts
 
