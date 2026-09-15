@@ -78,6 +78,13 @@ export const ESCALA_DO_CARD = 0.88
  */
 export const AREA_DA_GRADE = { topo: 212, base: TAMANHO.altura }
 
+/**
+ * Folga mínima acima e abaixo do bloco quando ele precisa encolher para caber.
+ * Sem ela, a redução preenche a faixa inteira e os cards encostam no subtítulo e
+ * na borda de baixo — foi o que aconteceu no primeiro mês com 13 pessoas.
+ */
+export const FOLGA_DA_GRADE = 24
+
 /** Largura útil dentro do card, já descontado o padding dos dois lados. */
 export const LARGURA_UTIL = CARD.largura - CARD.padding * 2
 
