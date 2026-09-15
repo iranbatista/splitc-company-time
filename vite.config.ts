@@ -1,6 +1,7 @@
 import path from 'node:path'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
+import type { Plugin } from 'vite'
 import { defineConfig, loadEnv } from 'vite'
 
 export default defineConfig(({ mode }) => {
@@ -33,6 +34,12 @@ export default defineConfig(({ mode }) => {
   // GitHub Pages serve em /nome-do-repo/. O workflow passa BASE_PATH.
   const basePath = ler('BASE_PATH') || '/'
 
+  // O proxy de foto não fica sob /v1: ele é rota nossa, não caminho da API do
+  // Notion. Em dev é servido pelo middleware daqui; em produção, pelo Worker.
+  const fotoBase = apiBase.startsWith('/')
+    ? '/foto'
+    : new URL('/foto', apiBase).toString()
+
   if (!notionToken && apiBase.startsWith('/')) {
     console.warn(
       '\n[notion] NOTION_TOKEN não definido. Copie .env.example para .env e preencha.\n',
@@ -46,7 +53,7 @@ export default defineConfig(({ mode }) => {
 
   return {
     base: basePath,
-    plugins: [react(), tailwindcss()],
+    plugins: [react(), tailwindcss(), proxyDeFoto()],
     resolve: {
       alias: {
         '@': path.resolve(import.meta.dirname, './src'),
@@ -56,6 +63,7 @@ export default defineConfig(({ mode }) => {
       // Nenhum dos dois é segredo. O token nunca entra aqui.
       __NOTION_DATA_SOURCE_ID__: JSON.stringify(dataSourceId),
       __API_BASE__: JSON.stringify(apiBase),
+      __FOTO_BASE__: JSON.stringify(fotoBase),
     },
     server: {
       proxy: {
@@ -75,3 +83,63 @@ export default defineConfig(({ mode }) => {
     },
   }
 })
+
+/**
+ * Mesmo papel do /foto do Worker, para o dev server. O S3 do Notion não manda
+ * CORS, então uma foto desenhada direto da origem dele contamina o canvas e o
+ * `toBlob` passa a lançar; buscar no servidor e devolver com CORS resolve.
+ *
+ * A allowlist é a mesma de worker/src/index.ts e precisa andar junto com ela.
+ */
+const HOSTS_DE_FOTO = new Set([
+  'prod-files-secure.s3.us-west-2.amazonaws.com',
+  's3.us-west-2.amazonaws.com',
+  'file.notion.so',
+  'img.notionusercontent.com',
+  'prod-files-secure.notion-static.com',
+])
+
+function proxyDeFoto(): Plugin {
+  return {
+    name: 'proxy-de-foto',
+    configureServer(server) {
+      server.middlewares.use('/foto', async (req, res) => {
+        const alvo = new URL(req.url ?? '', 'http://local').searchParams.get('url')
+        const responder = (status: number, mensagem: string) => {
+          res.statusCode = status
+          res.setHeader('Content-Type', 'application/json')
+          res.end(JSON.stringify({ message: mensagem }))
+        }
+        if (!alvo) return responder(400, 'Falta o parâmetro url.')
+
+        let destino: URL
+        try {
+          destino = new URL(alvo)
+        } catch {
+          return responder(400, 'URL inválida.')
+        }
+        if (destino.protocol !== 'https:') return responder(403, 'Só https.')
+        if (!HOSTS_DE_FOTO.has(destino.hostname)) {
+          return responder(403, `Host não permitido: ${destino.hostname}.`)
+        }
+
+        try {
+          const upstream = await fetch(destino.toString(), { redirect: 'manual' })
+          if (upstream.status >= 300 && upstream.status < 400) {
+            return responder(502, 'A origem respondeu com redirect, que não é seguido.')
+          }
+          if (!upstream.ok) return responder(upstream.status, 'A origem não devolveu a foto.')
+          const tipo = upstream.headers.get('Content-Type') ?? ''
+          if (!tipo.startsWith('image/')) return responder(415, `A origem devolveu ${tipo}.`)
+
+          res.statusCode = 200
+          res.setHeader('Content-Type', tipo)
+          res.setHeader('Access-Control-Allow-Origin', '*')
+          res.end(Buffer.from(await upstream.arrayBuffer()))
+        } catch (causa) {
+          responder(502, `Falha ao buscar a foto: ${String(causa)}`)
+        }
+      })
+    },
+  }
+}
