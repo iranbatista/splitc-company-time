@@ -7,6 +7,34 @@ const STOPS_MARCA: readonly [number, string][] = [
   [1, '#ea5518'],
 ]
 
+/** Onde, em que escala e em que sentido uma imagem entra na arte. */
+export interface Posicao {
+  escala: number
+  x: number
+  y: number
+  /** O Canva permite espelhar a imagem, e o fundo desta arte está espelhado. */
+  espelhado?: boolean
+}
+
+/** Desenha a imagem inteira na escala e no deslocamento dados. */
+export function desenharEscalado(
+  ctx: CanvasRenderingContext2D,
+  img: HTMLImageElement,
+  posicao: Posicao,
+): void {
+  const largura = img.naturalWidth * posicao.escala
+  const altura = img.naturalHeight * posicao.escala
+  if (!posicao.espelhado) {
+    ctx.drawImage(img, posicao.x, posicao.y, largura, altura)
+    return
+  }
+  ctx.save()
+  ctx.translate(posicao.x + largura, posicao.y)
+  ctx.scale(-1, 1)
+  ctx.drawImage(img, 0, 0, largura, altura)
+  ctx.restore()
+}
+
 export interface Recorte {
   sx: number
   sy: number
@@ -33,12 +61,25 @@ export function recorteCover(
   }
 }
 
-export function coverEm(ctx: CanvasRenderingContext2D, img: HTMLImageElement, caixa: Caixa): void {
+export function coverEm(
+  ctx: CanvasRenderingContext2D,
+  img: HTMLImageElement,
+  caixa: Caixa,
+  espelhado = false,
+): void {
   const { sx, sy, sw, sh } = recorteCover(
     { largura: img.naturalWidth, altura: img.naturalHeight },
     caixa,
   )
-  ctx.drawImage(img, sx, sy, sw, sh, caixa.x, caixa.y, caixa.largura, caixa.altura)
+  if (!espelhado) {
+    ctx.drawImage(img, sx, sy, sw, sh, caixa.x, caixa.y, caixa.largura, caixa.altura)
+    return
+  }
+  ctx.save()
+  ctx.translate(caixa.x + caixa.largura, caixa.y)
+  ctx.scale(-1, 1)
+  ctx.drawImage(img, sx, sy, sw, sh, 0, 0, caixa.largura, caixa.altura)
+  ctx.restore()
 }
 
 /** Abre o caminho do retângulo arredondado. Quem chama decide entre `clip()` e `fill()`. */

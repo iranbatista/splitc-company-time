@@ -1,14 +1,16 @@
 import {
   caixaArredondada,
   coverEm,
+  desenharEscalado,
   desenharLinhas,
   gradiente135,
   larguraMaxima,
 } from '@/lib/imagens/canvas'
 import { quebrarBloco } from '@/lib/imagens/medidas'
 import {
-  CONTORNO_SHAPE,
   CORPO,
+  FUNDO_PRINCIPAL,
+  FUNDO_SHAPE_ESPELHADO,
   GAP_TITULO_CORPO,
   LARGURA_CONTEUDO,
   LOGO,
@@ -20,7 +22,6 @@ import {
   TRACKING,
   URL_BACKGROUND,
   URL_LOGO,
-  VEU_SHAPE,
   X_CONTEUDO,
   caixaShape,
   fonteOutfit,
@@ -84,28 +85,16 @@ export const aniversarioCasa: Modelo<ParamsAniversario> = {
     const conteudo = medirConteudo(ctx, anos, primeiroNome(nome))
     const shape = caixaShape(conteudo.altura)
 
-    // O background já vem em 1200x627, então é desenho 1:1.
-    ctx.drawImage(fundo, 0, 0, TAMANHO.largura, TAMANHO.altura)
+    desenharEscalado(ctx, fundo, FUNDO_PRINCIPAL)
     ctx.drawImage(logo, LOGO.x, LOGO.y, LOGO.largura, LOGO.altura)
 
-    // O mesmo fundo em cover dentro do shape: o zoom do recorte é o que cria o
-    // contraste com o fundo principal.
+    // A mesma imagem, em outra escala e outro deslocamento: o shape é uma
+    // janela para outra região do fundo, e é daí que vem o contraste.
     ctx.save()
     caixaArredondada(ctx, shape, RAIO_SHAPE)
     ctx.clip()
-    coverEm(ctx, fundo, shape)
-    // Véu por baixo do texto, nunca por cima: escurecer a tipografia junto
-    // anularia o ganho.
-    ctx.fillStyle = VEU_SHAPE
-    ctx.fillRect(shape.x, shape.y, shape.largura, shape.altura)
+    coverEm(ctx, fundo, shape, FUNDO_SHAPE_ESPELHADO)
     ctx.restore()
-
-    // O traço é o que de fato desenha a borda: com fundo e shape quase pretos,
-    // só o claro cria degrau.
-    caixaArredondada(ctx, shape, RAIO_SHAPE)
-    ctx.strokeStyle = CONTORNO_SHAPE.cor
-    ctx.lineWidth = CONTORNO_SHAPE.espessura
-    ctx.stroke()
 
     desenharConteudo(ctx, conteudo, shape.y)
     desenharTitulo1(ctx)
