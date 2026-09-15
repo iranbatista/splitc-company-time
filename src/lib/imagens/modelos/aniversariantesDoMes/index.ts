@@ -149,10 +149,14 @@ function desenharGrade(
 
   let indice = 0
   grade.porLinha.forEach((nesta, linha) => {
+    // Cada linha é centralizada na largura do bloco, então uma linha incompleta
+    // fica no meio das de cima em vez de encostar à esquerda.
+    const larguraDaLinha = nesta * CARD.largura + (nesta - 1) * CARD.gap
+    const recuo = (larguraBloco - larguraDaLinha) / 2
+
     for (let coluna = 0; coluna < nesta; coluna += 1) {
-      // Linhas alinhadas à esquerda entre si: quem centraliza é o bloco.
       const caixa: Caixa = {
-        x: coluna * (CARD.largura + CARD.gap),
+        x: recuo + coluna * (CARD.largura + CARD.gap),
         y: linha * (altura + CARD.gap),
         largura: CARD.largura,
         altura,

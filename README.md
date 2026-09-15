@@ -275,9 +275,9 @@ assim a navegação normal não passa pelo proxy.
 ### Grade da peça do mês
 
 `grade.ts` decide a distribuição: no máximo 6 colunas, enchendo o mínimo de
-linhas e depois equilibrando — 7 pessoas viram 4+3, e não 6+1. As linhas ficam
-alinhadas à esquerda entre si e o bloco inteiro é centralizado pela linha mais
-cheia. Acima de 12 pessoas o bloco passaria da altura da arte, e aí ele é
+linhas e depois equilibrando — 7 pessoas viram 4+3, e não 6+1. Cada linha é
+centralizada na largura do bloco, que por sua vez é centralizado na arte: uma
+linha incompleta fica no meio das de cima. Acima de 12 pessoas o bloco passaria da altura da arte, e aí ele é
 reduzido proporcionalmente em vez de cortar gente.
 
 Nome que não cabe na largura do card desce uma escada de abreviação: sobrenomes
