@@ -187,10 +187,10 @@ function desenharCard(
   ctx.stroke()
 
   const foto: Caixa = {
-    x: caixa.x + (caixa.largura - FOTO.largura) / 2,
+    x: caixa.x + (caixa.largura - FOTO.lado) / 2,
     y: caixa.y + CARD.padding,
-    largura: FOTO.largura,
-    altura: FOTO.altura,
+    largura: FOTO.lado,
+    altura: FOTO.lado,
   }
   desenharFoto(ctx, foto, pessoa, recursos)
 
@@ -238,7 +238,7 @@ function desenharFoto(
     ctx.fillStyle = gradiente135(ctx, caixa)
     ctx.fillRect(caixa.x, caixa.y, caixa.largura, caixa.altura)
     ctx.fillStyle = '#ffffff'
-    ctx.font = fonteOutfit(FOTO.altura * 0.34, true)
+    ctx.font = fonteOutfit(FOTO.lado * 0.34, true)
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
     ctx.fillText(iniciais(pessoa.nome), caixa.x + caixa.largura / 2, caixa.y + caixa.altura / 2)
