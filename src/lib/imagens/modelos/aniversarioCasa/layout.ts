@@ -27,6 +27,13 @@ export const SHAPE: Caixa = {
 }
 
 export const RAIO_SHAPE = 32
+
+/**
+ * Folga entre a última linha do corpo e a borda de baixo do shape. O canto
+ * arredondado tem 32px, então encostar a tinta na borda deixaria a última linha
+ * visualmente dentro da curva.
+ */
+export const FOLGA_CORPO = 16
 export const PADDING_SHAPE = 40
 export const GAP_TITULO_CORPO = 20
 
@@ -37,12 +44,19 @@ export const CONTEUDO = {
   largura: SHAPE.largura - PADDING_SHAPE * 2,
 }
 
+/** Onde a tinta do corpo tem de parar. */
+export const LIMITE_CORPO = SHAPE.y + SHAPE.altura - FOLGA_CORPO
+
 export const TITULO_1 = {
   tamanho: 39.5 * ESCALA_CANVA,
   entrelinha: 1.3,
   x: MARGEM,
-  /** Base da última linha: o bloco cresce para cima a partir daqui. */
-  base: TAMANHO.altura - MARGEM,
+  /**
+   * Base da última linha: o bloco cresce para cima a partir daqui. Os 63px da
+   * margem valem para a caixa de linha do Canva, não para a linha de base; os
+   * 15px de diferença foram medidos contra o export.
+   */
+  base: TAMANHO.altura - MARGEM - 15,
   /** Vai da margem esquerda até a borda do shape. */
   larguraMax: SHAPE.x - MARGEM,
 }
@@ -50,13 +64,28 @@ export const TITULO_1 = {
 export const TITULO_2 = {
   tamanho: 25 * ESCALA_CANVA,
   entrelinha: 1.3,
+  /**
+   * O Canva posiciona o texto pela caixa de linha dele, que não dá para
+   * reproduzir a partir das métricas do canvas. Este recuo entre o topo da
+   * área útil e a primeira tinta foi medido no export.
+   */
+  recuoTopo: 12,
 }
 
 export const CORPO = {
   tamanho: 18 * ESCALA_CANVA,
-  entrelinha: 1.5,
+  /** 33px entre linhas, medidos no export (o Canva não expõe o valor). */
+  entrelinha: 33 / (18 * ESCALA_CANVA),
   cor: '#ffffff',
 }
+
+/**
+ * O Canva compõe o texto um pouco mais apertado que o Chrome: com o mesmo
+ * tamanho de fonte (as alturas medidas batem exatamente), as linhas do export
+ * saem ~3,5% mais estreitas. Este tracking recupera a diferença — sem ele o
+ * corpo ganha linhas que o original não tem.
+ */
+export const TRACKING = '-0.0145em'
 
 export function fonteTitulo1(): string {
   return `italic 400 ${TITULO_1.tamanho}px "DM Serif Display", serif`
