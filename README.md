@@ -201,8 +201,19 @@ src/
     aniversario.ts        # regra pura de mês/anos, aritmética de meses, rótulos
     lista.ts              # puro: recorte de um mês + contagem por mês
     notion.ts             # axios, paginação, limiter, retry, fotos, erros
+    imagens/
+      tipos.ts            # contrato Modelo<P>: o que toda arte precisa expor
+      medidas.ts          # quebra de linha pura, com medidor injetado
+      canvas.ts           # cover, caixa arredondada, gradiente, texto com pesos
+      recursos.ts         # cache de imagens e fontes
+      gerar.ts            # cria o canvas, espera os recursos, delega o desenho
+      download.ts         # baixarBlob
+      registro.ts         # artes disponíveis, por id
+      modelos/
+        aniversarioCasa/  # a arte: layout.ts (geometria), textos.ts (copy), index.ts
   hooks/
     useAniversariantes.ts # busca + estado + cache de fotos, por mês de referência
+    useGerarImagem.ts     # estado ocioso/gerando/erro e download da arte
   types/
     notion.ts             # tipos explícitos das propriedades/blocos usados
     aniversariante.ts     # tipo de domínio
@@ -210,6 +221,8 @@ src/
     Header.tsx  MonthPicker.tsx  PersonCard.tsx  Avatar.tsx
     SkeletonCard.tsx  EmptyState.tsx  ErrorState.tsx
   App.tsx  main.tsx  index.css   # index.css carrega os tokens da marca
+  preview.tsx                 # conferência visual das artes, só em dev
+preview.html                # entrada da página de conferência (fora do build)
 public/favicon.svg          # ícone da SplitC, igual ao do outro app
 vite.config.ts              # proxy /notion + injeção do Authorization + alias @/
 worker/
@@ -222,12 +235,83 @@ worker/
 
 Imports usam o alias `@/` → `src/`, como no splitc-profile-picture.
 
+## Geração de imagens
+
+Cada card tem um botão "Baixar imagem" que gera o PNG 1200x627 de aniversário de
+casa da pessoa, desenhado em Canvas 2D no próprio browser. Não há servidor
+envolvido: o texto sai do tempo de casa e do primeiro nome que a lista já tem.
+
+O motor fica em `src/lib/imagens/` e não conhece nenhuma arte. Ele carrega os
+recursos que o modelo declara, cria o canvas no tamanho dele e chama `desenhar`.
+
+Para acrescentar uma arte nova:
+
+1. Crie `src/lib/imagens/modelos/<nome>/` com um `index.ts` que exporta um
+   `Modelo<P>` (o contrato está em `src/lib/imagens/tipos.ts`).
+2. Registre em `src/lib/imagens/registro.ts`.
+3. Confira o resultado em `http://localhost:5173/preview.html`, que renderiza a
+   arte ao lado da referência exportada do Canva. Essa página só existe em dev —
+   `vite build` tem o `index.html` como única entrada.
+
+`aplicavel(params)` devolve `true` ou o motivo de a arte não valer para aqueles
+dados — é o que desabilita o botão, com o motivo no tooltip. No aniversário de
+casa, só existe texto de 1 a 7 anos.
+
+### O que foi calibrado contra o export do Canva
+
+Os números do Canva não caem direto em pixel, então a geometria em
+`modelos/aniversarioCasa/layout.ts` foi medida contra
+`docs/referencias/aniversario-casa.png`:
+
+- Os tamanhos de fonte do Canva são unidades daquele documento, não pixels desta
+  arte. `ESCALA_CANVA = 1200 / 875` converte, e a medição confirma: o bloco do
+  Título 1 e a caixa de tinta do Título 2 saem com a mesma altura do export.
+- O Canva compõe mais apertado que o Chrome. No mesmo tamanho, as linhas saíam
+  ~3,5% mais largas e empurravam linhas a mais no corpo; `TRACKING` recupera a
+  diferença.
+- As âncoras verticais (base do Título 1, recuo do Título 2, entrelinha de 33px
+  do corpo) são valores medidos. O Canva posiciona o texto pela caixa de linha
+  dele, que não dá para reproduzir a partir das métricas do canvas.
+- O shape tem 662px de largura e margem de 63px à direita, como no Canva. A
+  **altura é variável**: ele abraça o texto e fica centralizado na vertical.
+
+O fundo (`public/background.webp`) **não** entra em cover na arte inteira: no
+Canva ele está espelhado na horizontal, maior que a página e deslocado —
+`FUNDO_PRINCIPAL`. Esses números saíram de casar a imagem contra o fundo já
+composto que o Canva exportava antes; o resíduo cai a ruído de grão, sem
+estrutura, então o alinhamento confere. O enquadramento é dado pela **largura
+desenhada**, não por um fator de escala, para que trocar a resolução do arquivo
+não mova a arte.
+
+O original do Canva tem 4000x2250 e 6MB, o que o browser baixaria inteiro no
+primeiro clique. O que é servido é uma redução para 1500px em WebP, com 141KB:
+comparando a imagem gerada com uma e com outra, a diferença é grão uniforme, sem
+banding nem mudança de estrutura. O original fica em
+`docs/referencias/background-original.png`, fora de `public/`, então não vai para
+o `dist/`.
+
+Dentro do shape a mesma imagem entra em cover da caixa dele, o que dá um
+recorte bem mais fechado. É esse desencontro de enquadramento que separa os
+dois, sem precisar de borda: a razão de luminância entre fora e dentro sai de
+1,23 (quando os dois usavam o mesmo recorte) para 1,40.
+
+Esse enquadramento do shape é o único número da arte que **não** foi possível
+recuperar do export: o interior do shape é gradiente liso demais e placements
+bem diferentes dão o mesmo resíduo. Cover é o padrão de moldura do Canva e bate
+com o arquivo original, mas se a arte mudar, é o primeiro lugar a conferir.
+
+A altura fixa de 475px do Canva foi feita em cima do texto de 7 anos, e a copy
+de 5 anos é uma linha mais longa do que isso comporta — com o shape fixo, a
+tinta passava da borda. Com o shape flexível, as sete copies saem na mesma
+tipografia e cada peça respira conforme o tamanho do texto.
+
 ## Scripts
 
 | Comando | O que faz |
 | --- | --- |
 | `npm run dev` | Dev server com o proxy do Notion |
 | `npm run typecheck` | `tsc --noEmit` |
+| `npm test` | Vitest nos módulos puros (quebra de linha, copy, geometria) |
 | `npm run build` | Type-check + build (gera `dist/`) |
 | `npm run preview` | Serve o `dist/` — só carrega dados se `API_BASE` apontar para o Worker |
 
