@@ -7,6 +7,7 @@ import {
   AREA_DA_GRADE,
   CARD,
   ESCALA_DO_CARD,
+  FOLGA_DA_GRADE,
   FOTO,
   LARGURA_UTIL,
   LOGO,
@@ -138,7 +139,10 @@ function desenharGrade(
   // ESCALA_DO_CARD é a redução de projeto; o segundo termo é rede de proteção,
   // porque acima de 12 pessoas a grade passa da arte. Reduzir o bloco inteiro
   // mantém a proporção; cortar cards perderia gente.
-  const reducao = Math.min(ESCALA_DO_CARD, alturaDisponivel / alturaBloco)
+  const reducao = Math.min(
+    ESCALA_DO_CARD,
+    (alturaDisponivel - FOLGA_DA_GRADE * 2) / alturaBloco,
+  )
 
   const x0 = (TAMANHO.largura - larguraBloco * reducao) / 2
   const y0 = AREA_DA_GRADE.topo + (alturaDisponivel - alturaBloco * reducao) / 2

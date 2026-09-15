@@ -105,13 +105,13 @@ os campos à mão. Nenhum `Date` participa da comparação.
 
 ### Seletor de mês
 
-O mês corrente mais os **6 próximos** (`MESES_VISIVEIS = 7`), em pills. Cada
+O mês corrente mais os **8 próximos** (`MESES_VISIVEIS = 9`), em pills. Cada
 pill mostra a contagem daquele mês, calculada no cliente a partir da mesma lista
 — então dá pra ver onde tem gente antes de clicar. Meses de outro ano levam o
 ano no rótulo curto (`jan 27`) e no título (`janeiro de 2027`).
 
 Mudar `MESES_VISIVEIS` (ou passar `quantidade` para `proximosMeses`) é tudo o
-que existe pra mostrar mais meses; nada mais no app depende do número 7.
+que existe pra mostrar mais meses; nada mais no app depende do número 9.
 
 ### Fotos
 
@@ -167,7 +167,7 @@ não grita.
 
 Componentes:
 
-- Seletor do mês corrente + 6 próximos em pills, com a contagem de cada mês;
+- Seletor do mês corrente + 8 próximos em pills, com a contagem de cada mês;
   rola no eixo x em telas estreitas em vez de quebrar linha
 - Grid responsivo (1 → 2 → 3 → 4 colunas): foto circular com aro de marca, nome,
   setor em `.eyebrow`, selo de tempo de casa e dia do mês

@@ -16,8 +16,8 @@ export interface MesReferencia {
   mes: number // 1-12
 }
 
-/** Mês corrente + os 6 próximos. */
-export const MESES_VISIVEIS = 7
+/** Mês corrente + os 8 próximos. */
+export const MESES_VISIVEIS = 9
 
 export const MESES_PT = [
   'janeiro',
