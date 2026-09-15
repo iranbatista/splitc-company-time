@@ -201,8 +201,19 @@ src/
     aniversario.ts        # regra pura de mês/anos, aritmética de meses, rótulos
     lista.ts              # puro: recorte de um mês + contagem por mês
     notion.ts             # axios, paginação, limiter, retry, fotos, erros
+    imagens/
+      tipos.ts            # contrato Modelo<P>: o que toda arte precisa expor
+      medidas.ts          # quebra de linha pura, com medidor injetado
+      canvas.ts           # cover, caixa arredondada, gradiente, texto com pesos
+      recursos.ts         # cache de imagens e fontes
+      gerar.ts            # cria o canvas, espera os recursos, delega o desenho
+      download.ts         # baixarBlob
+      registro.ts         # artes disponíveis, por id
+      modelos/
+        aniversarioCasa/  # a arte: layout.ts (geometria), textos.ts (copy), index.ts
   hooks/
     useAniversariantes.ts # busca + estado + cache de fotos, por mês de referência
+    useGerarImagem.ts     # estado ocioso/gerando/erro e download da arte
   types/
     notion.ts             # tipos explícitos das propriedades/blocos usados
     aniversariante.ts     # tipo de domínio
@@ -210,6 +221,8 @@ src/
     Header.tsx  MonthPicker.tsx  PersonCard.tsx  Avatar.tsx
     SkeletonCard.tsx  EmptyState.tsx  ErrorState.tsx
   App.tsx  main.tsx  index.css   # index.css carrega os tokens da marca
+  preview.tsx                 # conferência visual das artes, só em dev
+preview.html                # entrada da página de conferência (fora do build)
 public/favicon.svg          # ícone da SplitC, igual ao do outro app
 vite.config.ts              # proxy /notion + injeção do Authorization + alias @/
 worker/
@@ -222,12 +235,57 @@ worker/
 
 Imports usam o alias `@/` → `src/`, como no splitc-profile-picture.
 
+## Geração de imagens
+
+Cada card tem um botão "Baixar imagem" que gera o PNG 1200x627 de aniversário de
+casa da pessoa, desenhado em Canvas 2D no próprio browser. Não há servidor
+envolvido: o texto sai do tempo de casa e do primeiro nome que a lista já tem.
+
+O motor fica em `src/lib/imagens/` e não conhece nenhuma arte. Ele carrega os
+recursos que o modelo declara, cria o canvas no tamanho dele e chama `desenhar`.
+
+Para acrescentar uma arte nova:
+
+1. Crie `src/lib/imagens/modelos/<nome>/` com um `index.ts` que exporta um
+   `Modelo<P>` (o contrato está em `src/lib/imagens/tipos.ts`).
+2. Registre em `src/lib/imagens/registro.ts`.
+3. Confira o resultado em `http://localhost:5173/preview.html`, que renderiza a
+   arte ao lado da referência exportada do Canva. Essa página só existe em dev —
+   `vite build` tem o `index.html` como única entrada.
+
+`aplicavel(params)` devolve `true` ou o motivo de a arte não valer para aqueles
+dados — é o que desabilita o botão, com o motivo no tooltip. No aniversário de
+casa, só existe texto de 1 a 7 anos.
+
+### O que foi calibrado contra o export do Canva
+
+Os números do Canva não caem direto em pixel, então a geometria em
+`modelos/aniversarioCasa/layout.ts` foi medida contra
+`docs/referencias/aniversario-casa.png`:
+
+- Os tamanhos de fonte do Canva são unidades daquele documento, não pixels desta
+  arte. `ESCALA_CANVA = 1200 / 875` converte, e a medição confirma: o bloco do
+  Título 1 e a caixa de tinta do Título 2 saem com a mesma altura do export.
+- O Canva compõe mais apertado que o Chrome. No mesmo tamanho, as linhas saíam
+  ~3,5% mais largas e empurravam linhas a mais no corpo; `TRACKING` recupera a
+  diferença.
+- As âncoras verticais (base do Título 1, recuo do Título 2, entrelinha de 33px
+  do corpo) são valores medidos. O Canva posiciona o texto pela caixa de linha
+  dele, que não dá para reproduzir a partir das métricas do canvas.
+- O shape fica em 475,89 com 662x475. A spec dizia "63 do topo", o que não fecha
+  com 475 de altura em 627 de canvas; vale base + altura, e o export confirma.
+
+A arte foi desenhada em cima do texto de 7 anos. O de 5 anos é uma linha mais
+longo do que o shape comporta, então só esse ano desce degraus de tipografia até
+caber — os outros seis saem no tamanho da referência.
+
 ## Scripts
 
 | Comando | O que faz |
 | --- | --- |
 | `npm run dev` | Dev server com o proxy do Notion |
 | `npm run typecheck` | `tsc --noEmit` |
+| `npm test` | Vitest nos módulos puros (quebra de linha, copy, geometria) |
 | `npm run build` | Type-check + build (gera `dist/`) |
 | `npm run preview` | Serve o `dist/` — só carrega dados se `API_BASE` apontar para o Worker |
 
