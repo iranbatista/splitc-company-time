@@ -9,6 +9,7 @@ import { quebrarBloco } from '@/lib/imagens/medidas'
 import {
   CONTEUDO,
   CORPO,
+  ESCALAS_CORPO,
   GAP_TITULO_CORPO,
   LIMITE_CORPO,
   LOGO,
@@ -141,7 +142,7 @@ function ajustarCorpo(
   const blocosDeTexto = corpo(anos, nome)
   let ultimo: CorpoAjustado | null = null
 
-  for (let escala = 1; escala >= 0.8; escala -= 0.02) {
+  for (const escala of ESCALAS_CORPO) {
     const tamanho = CORPO.tamanho * escala
     const entrelinha = CORPO.tamanho * CORPO.entrelinha * escala
     const fonte = (negrito: boolean) => fonteOutfit(tamanho, negrito)
@@ -165,8 +166,10 @@ function ajustarCorpo(
     if (y + (linhas - 1) * entrelinha + descida <= LIMITE_CORPO) break
   }
 
-  // O laço sempre roda ao menos uma vez, então `ultimo` nunca é null aqui.
-  return ultimo as CorpoAjustado
+  // Se nem o menor degrau coubesse, sai o menor mesmo — uma copy nova longa
+  // demais é problema de texto, não motivo para não gerar a imagem.
+  if (!ultimo) throw new Error('ESCALAS_CORPO está vazio.')
+  return ultimo
 }
 
 function desenharConteudo(ctx: CanvasRenderingContext2D, anos: number, nome: string): void {

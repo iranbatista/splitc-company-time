@@ -47,6 +47,13 @@ export const CONTEUDO = {
 /** Onde a tinta do corpo tem de parar. */
 export const LIMITE_CORPO = SHAPE.y + SHAPE.altura - FOLGA_CORPO
 
+/**
+ * Degraus de tipografia do corpo, do tamanho da referência até 80%. A lista é
+ * montada a partir de contagem inteira: somar -0.02 repetidamente acumula erro
+ * de ponto flutuante e o último degrau nunca chegaria a 0,8.
+ */
+export const ESCALAS_CORPO = Array.from({ length: 11 }, (_, passo) => 1 - passo * 0.02)
+
 export const TITULO_1 = {
   tamanho: 39.5 * ESCALA_CANVA,
   entrelinha: 1.3,
