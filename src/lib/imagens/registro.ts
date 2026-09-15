@@ -1,4 +1,5 @@
 import { aniversarioCasa } from '@/lib/imagens/modelos/aniversarioCasa'
+import { aniversariantesDoMes } from '@/lib/imagens/modelos/aniversariantesDoMes'
 
 /**
  * Todas as artes disponíveis. Existe para o dia em que houver uma UI de
@@ -7,4 +8,5 @@ import { aniversarioCasa } from '@/lib/imagens/modelos/aniversarioCasa'
  */
 export const MODELOS = {
   [aniversarioCasa.id]: aniversarioCasa,
+  [aniversariantesDoMes.id]: aniversariantesDoMes,
 }

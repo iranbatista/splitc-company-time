@@ -5,9 +5,15 @@
  * Authorization e encaminha para api.notion.com. O token vive só aqui,
  * como secret do Cloudflare, e nunca chega ao bundle.
  *
- * O Worker é deliberadamente burro e restrito: só duas rotas passam, e a
+ * O Worker é deliberadamente burro e restrito: só três rotas passam, e a
  * query só aceita o data source configurado. Sem isso, o proxy viraria uma
  * porta aberta para o workspace inteiro do Notion com o token da integração.
+ *
+ * A terceira rota é /foto, que existe só por causa do canvas: o S3 do Notion
+ * não manda header de CORS, então uma foto desenhada direto da origem dele
+ * contamina o canvas e o `toBlob` passa a lançar. Buscar a foto aqui e devolver
+ * com CORS resolve — e é justamente o tipo de rota que vira proxy aberto se
+ * aceitar qualquer URL, então ela só aceita host da allowlist.
  */
 
 export interface Env {
@@ -47,7 +53,7 @@ function erro(status: number, mensagem: string, cors: Headers): Response {
   return new Response(JSON.stringify({ message: mensagem }), { status, headers })
 }
 
-/** Só duas rotas passam. Qualquer outra coisa é 403. */
+/** Só as rotas da API do Notion. /foto é tratada à parte. */
 function rotaPermitida(metodo: string, caminho: string, env: Env): boolean {
   if (metodo === 'POST') {
     const query = new RegExp(
@@ -59,6 +65,67 @@ function rotaPermitida(metodo: string, caminho: string, env: Env): boolean {
     return new RegExp(`^/v1/blocks/${UUID}/children$`).test(caminho)
   }
   return false
+}
+
+/**
+ * Hosts de onde uma foto pode vir. Lista fechada, comparada por igualdade: um
+ * `endsWith` aceitaria `prod-files-secure.s3.us-west-2.amazonaws.com.mal.com`.
+ * Foto hospedada fora do Notion (bloco image do tipo `external`) não passa, e o
+ * app cai no placeholder de iniciais — melhor que liberar host arbitrário.
+ */
+const HOSTS_DE_FOTO = new Set([
+  'prod-files-secure.s3.us-west-2.amazonaws.com',
+  's3.us-west-2.amazonaws.com',
+  'file.notion.so',
+  'img.notionusercontent.com',
+  'prod-files-secure.notion-static.com',
+])
+
+/** Teto de resposta, para o proxy não virar canal de transferência. */
+const TAMANHO_MAXIMO_DA_FOTO = 12 * 1024 * 1024
+
+async function servirFoto(url: URL, cors: Headers): Promise<Response> {
+  const alvo = url.searchParams.get('url')
+  if (!alvo) return erro(400, 'Falta o parâmetro url.', cors)
+
+  let destino: URL
+  try {
+    destino = new URL(alvo)
+  } catch {
+    return erro(400, 'URL inválida.', cors)
+  }
+
+  if (destino.protocol !== 'https:') return erro(403, 'Só https.', cors)
+  if (!HOSTS_DE_FOTO.has(destino.hostname)) {
+    return erro(403, `Host não permitido: ${destino.hostname}.`, cors)
+  }
+
+  // `manual` de propósito: seguir redirect deixaria a allowlist de fora da
+  // decisão, porque o destino final poderia ser qualquer host.
+  const upstream = await fetch(destino.toString(), { redirect: 'manual' })
+
+  if (upstream.status >= 300 && upstream.status < 400) {
+    return erro(502, 'A origem respondeu com redirect, que não é seguido.', cors)
+  }
+  if (!upstream.ok) {
+    return erro(upstream.status, 'A origem não devolveu a foto.', cors)
+  }
+
+  const tipo = upstream.headers.get('Content-Type') ?? ''
+  if (!tipo.startsWith('image/')) {
+    return erro(415, `A origem devolveu ${tipo || 'tipo desconhecido'}.`, cors)
+  }
+
+  const tamanho = Number(upstream.headers.get('Content-Length') ?? '0')
+  if (tamanho > TAMANHO_MAXIMO_DA_FOTO) {
+    return erro(413, 'Foto maior que o limite do proxy.', cors)
+  }
+
+  const headers = new Headers(cors)
+  headers.set('Content-Type', tipo)
+  // A URL do Notion é assinada e expira; cache curto, e só no browser.
+  headers.set('Cache-Control', 'private, max-age=300')
+  return new Response(upstream.body, { status: 200, headers })
 }
 
 export default {
@@ -78,6 +145,10 @@ export default {
     }
 
     const url = new URL(request.url)
+
+    if (request.method === 'GET' && url.pathname === '/foto') {
+      return servirFoto(url, cors)
+    }
 
     if (!rotaPermitida(request.method, url.pathname, env)) {
       return erro(403, 'Rota não permitida por este proxy.', cors)

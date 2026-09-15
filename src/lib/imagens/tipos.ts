@@ -27,6 +27,11 @@ export type Bloco = Trecho[]
 export type Linha = Trecho[]
 
 export interface Recursos {
+  /**
+   * Só as imagens que carregaram. Uma foto que falhou fica de fora, e a arte
+   * decide o que fazer — no caso das pessoas, cai no placeholder de iniciais.
+   * Recurso que a arte considera obrigatório é ela quem cobra.
+   */
   imagens: Map<string, HTMLImageElement>
 }
 
@@ -39,8 +44,11 @@ export interface Modelo<P> {
   /** Rótulo humano, para quando existir uma UI de escolha de arte. */
   nome: string
   tamanho: { largura: number; altura: number }
-  /** URLs de imagem a pré-carregar antes do desenho. */
-  imagens: string[]
+  /**
+   * URLs a pré-carregar. É função dos params porque uma arte pode depender de
+   * imagens que só o parâmetro conhece — as fotos das pessoas do mês.
+   */
+  imagens(params: P): string[]
   /** Specs de fonte no formato do `ctx.font`, para o `document.fonts.load`. */
   fontes: string[]
   /** `true`, ou o motivo (exibível) de a arte não valer para esses params. */

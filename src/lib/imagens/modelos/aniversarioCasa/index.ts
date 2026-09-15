@@ -57,7 +57,7 @@ export const aniversarioCasa: Modelo<ParamsAniversario> = {
   id: 'aniversario-casa',
   nome: 'Aniversário de casa',
   tamanho: TAMANHO,
-  imagens: [URL_BACKGROUND, URL_LOGO],
+  imagens: () => [URL_BACKGROUND, URL_LOGO],
   fontes: [fonteTitulo1(), fonteOutfit(TITULO_2.tamanho, true), fonteOutfit(CORPO.tamanho, false)],
 
   aplicavel({ anos }) {
