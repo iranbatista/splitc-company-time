@@ -28,7 +28,7 @@ export function BotaoImagemDoMes({ mes, pessoas, carregandoFotos }: BotaoImagemD
         : null
 
   return (
-    <div className="flex justify-center">
+    <div className="flex justify-start">
       <button
         type="button"
         onClick={() => void gerar({ mes, pessoas })}
