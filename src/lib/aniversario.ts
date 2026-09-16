@@ -16,8 +16,11 @@ export interface MesReferencia {
   mes: number // 1-12
 }
 
-/** Mês corrente + os 8 próximos. */
-export const MESES_VISIVEIS = 9
+/** Primeiro ano selecionável no seletor. */
+export const ANO_INICIAL = 2026
+
+/** Quantos anos aparecem no seletor, a partir de ANO_INICIAL. */
+export const ANOS_VISIVEIS = 3
 
 export const MESES_PT = [
   'janeiro',
@@ -76,19 +79,14 @@ export function mesAtual(agora: Date = new Date()): MesReferencia {
   return { ano: hoje.ano, mes: hoje.mes }
 }
 
-/** Soma meses à referência, virando o ano quando passa de dezembro. */
-export function avancarMes(referencia: MesReferencia, meses: number): MesReferencia {
-  // Aritmética em base 0 pra o módulo funcionar em qualquer direção.
-  const total = referencia.ano * 12 + (referencia.mes - 1) + meses
-  return { ano: Math.floor(total / 12), mes: (total % 12) + 1 }
+/** Os anos do seletor, em ordem: ANO_INICIAL, ANO_INICIAL + 1, ... */
+export function anosSelecionaveis(): number[] {
+  return Array.from({ length: ANOS_VISIVEIS }, (_, i) => ANO_INICIAL + i)
 }
 
-/** A referência mais os próximos, na ordem. */
-export function proximosMeses(
-  inicio: MesReferencia,
-  quantidade: number = MESES_VISIVEIS,
-): MesReferencia[] {
-  return Array.from({ length: quantidade }, (_, i) => avancarMes(inicio, i))
+/** Os 12 meses de um ano, janeiro a dezembro. */
+export function mesesDoAno(ano: number): MesReferencia[] {
+  return Array.from({ length: 12 }, (_, i) => ({ ano, mes: i + 1 }))
 }
 
 export function mesmoMes(a: MesReferencia, b: MesReferencia): boolean {
@@ -107,17 +105,6 @@ export function chaveMes(referencia: MesReferencia): string {
 export function rotuloMes(referencia: MesReferencia, anoBase: number): string {
   const nome = nomeDoMes(referencia.mes)
   return referencia.ano === anoBase ? nome : `${nome} de ${referencia.ano}`
-}
-
-/** Versão curta pro seletor: "set" ou "jan 27". */
-export function rotuloMesCurto(
-  referencia: MesReferencia,
-  anoBase: number,
-): string {
-  const abreviado = nomeDoMes(referencia.mes).slice(0, 3)
-  return referencia.ano === anoBase
-    ? abreviado
-    : `${abreviado} ${String(referencia.ano).slice(-2)}`
 }
 
 /**

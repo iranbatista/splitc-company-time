@@ -6,21 +6,32 @@ import { Header } from '@/components/Header'
 import { MonthPicker } from '@/components/MonthPicker'
 import { PersonCard } from '@/components/PersonCard'
 import { SkeletonGrid } from '@/components/SkeletonCard'
+import { YearPicker } from '@/components/YearPicker'
 import { useAniversariantes } from '@/hooks/useAniversariantes'
 import {
+  anosSelecionaveis,
   mesAtual,
+  mesesDoAno,
   mesmoMes,
   nomeDoMes,
-  proximosMeses,
   rotuloMes,
 } from '@/lib/aniversario'
 
 export default function App() {
-  // Uma leitura só do relógio: o mês corrente é a origem do seletor e o
-  // default da seleção.
+  // Uma leitura só do relógio: o mês corrente é a origem do default da seleção.
   const atual = useMemo(() => mesAtual(), [])
-  const meses = useMemo(() => proximosMeses(atual), [atual])
-  const [selecionado, setSelecionado] = useState(atual)
+  const anos = useMemo(() => anosSelecionaveis(), [])
+
+  const [anoSelecionado, setAnoSelecionado] = useState(
+    anos.includes(atual.ano) ? atual.ano : anos[0],
+  )
+  const [mesSelecionado, setMesSelecionado] = useState(atual.mes)
+
+  const selecionado = useMemo(
+    () => ({ ano: anoSelecionado, mes: mesSelecionado }),
+    [anoSelecionado, mesSelecionado],
+  )
+  const meses = useMemo(() => mesesDoAno(anoSelecionado), [anoSelecionado])
 
   const {
     aniversariantes,
@@ -45,13 +56,14 @@ export default function App() {
         comErro={erro !== null}
       />
 
-      <MonthPicker
-        meses={meses}
-        selecionado={selecionado}
-        onSelect={setSelecionado}
-        contagens={erro ? null : contagens}
-        anoBase={atual.ano}
-      />
+      <div className="flex flex-wrap gap-4">
+        <YearPicker anos={anos} selecionado={anoSelecionado} onSelect={setAnoSelecionado} />
+        <MonthPicker
+          selecionado={mesSelecionado}
+          onSelect={setMesSelecionado}
+          contagens={erro ? null : contagens}
+        />
+      </div>
 
       {!erro && !carregando && aniversariantes.length > 0 && (
         <BotaoImagemDoMes
